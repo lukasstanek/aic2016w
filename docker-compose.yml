@@ -1,0 +1,18 @@
+version: '2'
+services:
+  kafka:
+    image: ches/kafka
+    depends_on:
+      - zookeeper
+    environment:
+      #- KAFKA_ADVERTISED_HOST_NAME=172.0.17.1
+      #- ADVERTISED_PORT=9092
+      - ZOOKEEPER_IP=zookeeper
+    ports:
+      - "9092:9092"
+    links:
+      - zookeeper
+  zookeeper:
+    image: zookeeper
+    ports:
+      - "2181:2181"

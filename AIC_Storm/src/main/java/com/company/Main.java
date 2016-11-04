@@ -1,14 +1,15 @@
 package com.company;
 
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.generated.StormTopology;
-import backtype.storm.scheduler.Topologies;
-import backtype.storm.spout.SchemeAsMultiScheme;
-import backtype.storm.spout.SpoutOutputCollector;
-import backtype.storm.topology.TopologyBuilder;
+
+
+
 import bolts.GetLocationBolt;
-import storm.kafka.*;
+import org.apache.storm.Config;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.generated.StormTopology;
+import org.apache.storm.kafka.*;
+import org.apache.storm.spout.SchemeAsMultiScheme;
+import org.apache.storm.topology.TopologyBuilder;
 
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ public class Main {
         config.setNumWorkers(1);
 
         //zookeeper brokerhost
-        BrokerHosts host = new ZkHosts("localhost:2181");
+        BrokerHosts host = new ZkHosts("172.17.0.1:2181");
         //kafka config
         SpoutConfig spoutConfig = new SpoutConfig(host,"taxilocs","/taxilocs", UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
