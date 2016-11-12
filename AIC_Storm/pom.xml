@@ -43,6 +43,13 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.storm</groupId>
+            <artifactId>storm-redis</artifactId>
+            <version>1.0.2</version>
+            <!--<scope>provided</scope>-->
+        </dependency>
+
     </dependencies>
 
 

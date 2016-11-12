@@ -3,6 +3,8 @@ package com.company;
 
 
 
+import bolts.DistanceBolt;
+import bolts.DistancePropagator;
 import bolts.GetLocationBolt;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -35,7 +37,19 @@ public class Main {
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafkaSpout", spout);
-        builder.setBolt("getLocation", new GetLocationBolt());
+        //builder.setBolt("getLocation", new GetLocationBolt());
+
+
+        JedisPoolConfig poolConfig = new JedisPoolConfig.Builder()
+                .setHost(host).setPort(port).build();
+        RedisStoreMapper storeMapper = new WordCountStoreMapper();
+        RedisStoreBolt storeBolt = new RedisStoreBolt(poolConfig, storeMapper);
+
+
+        builder.setBolt("distanceCalculator", new DistanceBolt())
+                .shuffleGrouping("kafkaSpout");
+        builder.setBolt("distancePropagator", new DistancePropagator())
+                .shuffleGrouping("distanceCalculator");
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
 
