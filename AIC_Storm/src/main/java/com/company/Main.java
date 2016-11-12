@@ -4,12 +4,16 @@ package com.company;
 
 
 import bolts.GetLocationBolt;
+import bolts.LocationMonitor;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.kafka.*;
+import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.spout.SchemeAsMultiScheme;
+import org.apache.storm.topology.InputDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
+import util.Haversine;
 
 import java.util.UUID;
 
@@ -32,12 +36,26 @@ public class Main {
         //kafka spout
         KafkaSpout spout = new KafkaSpout(spoutConfig);
 
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder().setHost("172.17.0.1").setPort(6379).build();
+
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafkaSpout", spout);
-        builder.setBolt("getLocation", new GetLocationBolt());
+        builder.setBolt("getLocation", new GetLocationBolt()).shuffleGrouping("kafkaSpout");
+        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig)).shuffleGrouping("getLocation");
+
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
 
+    }
+
+    public static void testHaversine(String[] args){
+        double lat = 39.916320;
+        double long1 = 116.397187;
+
+        double lat2 = 39.913785;
+        double long2 = 116.397681;
+
+        System.out.println("distance: " + Haversine.calculate(lat,long1,lat2,long2));
     }
 }

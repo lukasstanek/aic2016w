@@ -16,3 +16,8 @@ services:
     image: zookeeper
     ports:
       - "2181:2181"
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+

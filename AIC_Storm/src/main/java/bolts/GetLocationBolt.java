@@ -19,7 +19,7 @@ public class GetLocationBolt implements IRichBolt {
 
 
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-        this.collector = collector;
+        this.collector = outputCollector;
     }
 
 
