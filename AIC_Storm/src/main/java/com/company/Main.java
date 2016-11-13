@@ -3,6 +3,8 @@ package com.company;
 
 
 
+import bolts.DistanceCalculatorBolt;
+import bolts.DistancePropagator;
 import bolts.GetLocationBolt;
 import bolts.LocationMonitor;
 import org.apache.storm.Config;
@@ -11,8 +13,8 @@ import org.apache.storm.generated.StormTopology;
 import org.apache.storm.kafka.*;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.spout.SchemeAsMultiScheme;
-import org.apache.storm.topology.InputDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
+import org.apache.storm.utils.Utils;
 import util.Haversine;
 
 import java.util.UUID;
@@ -41,12 +43,19 @@ public class Main {
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafkaSpout", spout);
+
         builder.setBolt("getLocation", new GetLocationBolt()).shuffleGrouping("kafkaSpout");
         builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig)).shuffleGrouping("getLocation");
 
+        builder.setBolt("distanceCalculator", new DistanceCalculatorBolt(jedisPoolConfig))
+                .shuffleGrouping("kafkaSpout");
+        builder.setBolt("distancePropagator", new DistancePropagator(jedisPoolConfig))
+                .shuffleGrouping("distanceCalculator");
+
+
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
-
+        //cluster.shutdown();
     }
 
     public static void testHaversine(String[] args){
