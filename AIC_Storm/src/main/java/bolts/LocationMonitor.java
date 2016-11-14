@@ -56,6 +56,7 @@ public class LocationMonitor extends AbstractRedisBolt {
             }
         }
 
+        this.returnInstance(container);
         collector.ack(tuple);
     }
 
