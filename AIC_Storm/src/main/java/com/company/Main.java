@@ -3,10 +3,7 @@ package com.company;
 
 
 
-import bolts.DistanceCalculatorBolt;
-import bolts.DistancePropagator;
-import bolts.GetLocationBolt;
-import bolts.LocationMonitor;
+import bolts.*;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.generated.StormTopology;
@@ -51,7 +48,8 @@ public class Main {
                 .shuffleGrouping("kafkaSpout");
         builder.setBolt("distancePropagator", new DistancePropagator(jedisPoolConfig))
                 .shuffleGrouping("distanceCalculator");
-
+        builder.setBolt("currentDistance", new CurrentSpeedBolt(jedisPoolConfig))
+                .shuffleGrouping("kafkaSpout");
 
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
