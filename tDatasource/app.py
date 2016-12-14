@@ -48,10 +48,7 @@ else:
         for line in filehandle:
             datapoints.append(TaxiLocation(line))
 
-
     datapoints.sort(key=lambda x: x.timestamp, reverse=False)
-
-
 
     currentTime = datapoints[0].timestamp - 3
 

@@ -1,5 +1,6 @@
 package bolts;
 
+import com.sun.corba.se.spi.protocol.RequestDispatcherDefault;
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.topology.OutputFieldsDeclarer;
@@ -24,17 +25,17 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
 
         try{
             jedisCommands = getInstance();
-            int taxiId = input.getInteger(0);
-            float currentSpeed = input.getFloat(1);
+            String taxiId = input.getString(0);
+            double currentSpeed = input.getDouble(1);
 
-            String storedValues = jedisCommands.get(""+taxiId);
-            float newAverageSpeed;
+            String storedValues = jedisCommands.get(REDIS_TAG+taxiId);
+            double newAverageSpeed;
             if(storedValues == null){
                 newAverageSpeed = currentSpeed;
                 jedisCommands.set(REDIS_TAG+taxiId, ""+newAverageSpeed+", 1");
             }else{
-                float currentAverageSpeed = Float.parseFloat(storedValues.split(",")[0]);
-                float currentCount = Float.parseFloat(storedValues.split(",")[1]);
+                double currentAverageSpeed = Float.parseFloat(storedValues.split(",")[0]);
+                double currentCount = Float.parseFloat(storedValues.split(",")[1]);
                 newAverageSpeed = (currentAverageSpeed*currentCount + currentSpeed)/(currentCount + 1);
                 currentCount++;
                 jedisCommands.set(REDIS_TAG+taxiId,""+newAverageSpeed+","+currentCount);

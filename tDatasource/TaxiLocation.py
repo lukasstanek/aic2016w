@@ -11,7 +11,7 @@ class TaxiLocation:
         self.id = splits[0]
         timestamp = splits[1]
         self.timeAsDate = timestamp
-        self.timestamp = time.mktime(datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').timetuple())
+        self.timestamp = int(time.mktime(datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').timetuple()))
         self.longitude = splits[3]
         self.latitude = splits[2]
 
@@ -20,5 +20,5 @@ class TaxiLocation:
         print("ID: " + self.id + "\nTIME: " + str(self.timestamp) + "\nCOORDS: " + self.longitude + "/" + self.latitude)
 
     def json(self):
-        payload = {'id': self.id, 'timestamp': self.timestamp, 'longitude': self.longitude, 'latitude': self.latitude}
+        payload = {'id': self.id, 'timestamp': str(self.timestamp), 'longitude': self.longitude, 'latitude': self.latitude}
         return json.dumps(payload)
