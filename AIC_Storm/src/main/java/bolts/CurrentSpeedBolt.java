@@ -63,7 +63,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
                 log.info("current speed is not a number");
             }
 
-
+            log.info("Current speed for Taxi #" + taxiId + ": " + currentSpeed + " km/h");
             collector.emit(new Values(taxiId, currentSpeed));
         }
 
