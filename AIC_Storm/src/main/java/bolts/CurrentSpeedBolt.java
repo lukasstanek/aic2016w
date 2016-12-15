@@ -51,8 +51,20 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
             double dist = Haversine.calculate(lastTaxtLat, lastTaxtLon, currentTaxiLat, currentTaxiLon);
             double timeDiff = currentTimestamp - lastTimestamp;
 
+            // in case we have a time diff of 0
+            if(timeDiff == 0){
+                this.returnInstance(container);
+                collector.ack(tuple);
+                return;
+            }
+            double currentSpeed = Math.abs((dist/timeDiff)*3600);
 
-            collector.emit(new Values(taxiId, (dist/timeDiff)*3600));
+            if(Double.isNaN(currentSpeed)){
+                log.info("current speed is not a number");
+            }
+
+
+            collector.emit(new Values(taxiId, currentSpeed));
         }
 
         container.set(REDIS_TAG+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));

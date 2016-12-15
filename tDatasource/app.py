@@ -30,40 +30,63 @@ def unifyInputs():
             with open(join(path + '06/', file), 'r') as filehandle:
                 for line in filehandle:
                     datapoints.append(TaxiLocation(line))
+    datapoints.sort(key=lambda x: x.timestamp, reverse=False)
 
     writeListToFile(datapoints)
 
+def send_data_continously(filehandle):
+    for line in filehandle:
+        location = TaxiLocation(line)
+
+        print('emitting: ' + location.json())
+        p = Producer({'bootstrap.servers': 'localhost'})
+        p.produce('taxilocs', location.json())
+        p.flush()
+
+        sleep(1*speed)
+
+def send_data_realtime(filehandle):
+    firstLine = True
+    currentTime = ''
+    while True:
+        line = filehandle.readline()
+        if not line:
+            break
+        location = TaxiLocation(line)
+        if firstLine:
+            currentTime = location.timestamp - 3
+            firstLine = False
+        while location.timestamp > currentTime:
+            currentTime += 1
+            sleep(1*speed)
+            print('current time: ' + str(currentTime))
+
+        print('emitting: ' + location.json())
+        p = Producer({'bootstrap.servers': 'localhost'})
+        p.produce('taxilocs', location.json())
+        p.flush()
+
+def send_data():
+    print('reading file: ' + filename)
+    with open(join(path, filename), 'r') as filehandle:
+        if mode == 'realtime':
+            send_data_realtime(filehandle)
+        elif mode == 'continous':
+            send_data_continously(filehandle)
 
 
-for arg in sys.argv:
-    cmd = arg
+speed = 1
+mode = 'realtime'
 
-if cmd == 'unify':
+if len(sys.argv) > 1:
+    mode = sys.argv[1]
+
+if len(sys.argv) > 2:
+    speed = float(sys.argv[2])
+
+if mode == 'unify':
     print('unifying the folder')
     unifyInputs()
 else:
+    send_data()
 
-    print('reading file: ' + filename)
-    with open(join(path, filename), 'r') as filehandle:
-        for line in filehandle:
-            datapoints.append(TaxiLocation(line))
-
-    datapoints.sort(key=lambda x: x.timestamp, reverse=False)
-
-    currentTime = datapoints[0].timestamp - 3
-
-    speed = .1
-
-    while True:
-        print('current time : ' + str(currentTime))
-
-        while datapoints[0].timestamp <= currentTime:
-            print('position updated for taxi #' + str(datapoints[0].id))
-            print('lat: ' + str(datapoints[0].latitude) + ' - lon: ' + str(datapoints[0].longitude))
-            p = Producer({'bootstrap.servers': 'localhost'})
-            p.produce('taxilocs', datapoints[0].json())
-            p.flush()
-            del datapoints[0]
-
-        currentTime += 1
-        sleep(1*speed)

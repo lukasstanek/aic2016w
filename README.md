@@ -4,6 +4,13 @@
 For the submodule tDatasource you need a running python 3 installation or a virtual environment. It is dependant on the module
 ```confluent-kafka``` which is dependant on a C library called ```librdkafka``` .
 
+usage: ap.py [MODE] [SPEED] 
+Mode:
+* continous
+* realtime
+* unify
+
+output speed in seconds (can also be floating points)
 
 ## AIC_Storm 
 This submodule contains all needed dependencies in the maven pom.xml file.

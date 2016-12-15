@@ -48,8 +48,14 @@ public class Main {
                 .shuffleGrouping("kafkaSpout");
         builder.setBolt("distancePropagator", new DistancePropagator(jedisPoolConfig))
                 .shuffleGrouping("distanceCalculator");
-        builder.setBolt("currentDistance", new CurrentSpeedBolt(jedisPoolConfig))
+
+
+        builder.setBolt("currentSpeed", new CurrentSpeedBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
+
+
+        builder.setBolt("averageSpeed", new AverageSpeedBolt(jedisPoolConfig))
+            .shuffleGrouping("currentSpeed");
 
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
