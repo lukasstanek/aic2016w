@@ -42,7 +42,7 @@ public class Main {
         builder.setSpout("kafkaSpout", spout);
 
         builder.setBolt("getLocation", new GetLocationBolt()).shuffleGrouping("kafkaSpout");
-        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig)).shuffleGrouping("getLocation");
+        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig)).shuffleGrouping("kafkaSpout");
 
         builder.setBolt("distanceCalculator", new DistanceCalculatorBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
