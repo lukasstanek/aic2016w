@@ -53,8 +53,8 @@ public class DistancePropagator extends AbstractRedisBolt {
                 jedisCommands.del("dpb-active-taxis");
                 lastPropagation = System.currentTimeMillis();
 
-                log.info("Current Taxis driving: " + currentNumberOfDrivingTaxis);
-                log.info("Total Distance: "+(distance + tuple.getDouble(1)));
+                System.out.println("G4T1: Current Taxis driving: " + currentNumberOfDrivingTaxis);
+                System.out.println("G4T1: Total Distance: "+(distance + tuple.getDouble(1)));
             }
 
         } finally {

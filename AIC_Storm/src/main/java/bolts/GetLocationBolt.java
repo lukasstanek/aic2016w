@@ -26,7 +26,6 @@ public class GetLocationBolt implements IRichBolt {
     public void execute(Tuple tuple) {
         String input = tuple.getString(0);
         collector.emit(new Values(input));
-        System.out.println(input);
         collector.ack(tuple);
     }
 

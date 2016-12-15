@@ -57,6 +57,12 @@ public class Main {
         builder.setBolt("averageSpeed", new AverageSpeedBolt(jedisPoolConfig))
             .shuffleGrouping("currentSpeed");
 
+        builder.setBolt("notifyOutOfBounds", new NotifyOutOfBoundsBolt())
+                .shuffleGrouping("kafkaSpout");
+
+        builder.setBolt("notifySpeeding", new NotifySpeedingBolt())
+                .shuffleGrouping("currentSpeed");
+
         StormTopology topology = builder.createTopology();
         cluster.submitTopology("taxilocSample",config,topology);
         //cluster.shutdown();

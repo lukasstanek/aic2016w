@@ -64,6 +64,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
             }
 
 
+            System.out.println("G4T1: taxi: " + taxiId + " current speed: "+ currentSpeed);
             collector.emit(new Values(taxiId, currentSpeed));
         }
 
