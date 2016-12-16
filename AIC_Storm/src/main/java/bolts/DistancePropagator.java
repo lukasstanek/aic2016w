@@ -50,11 +50,12 @@ public class DistancePropagator extends AbstractRedisBolt {
             if(System.currentTimeMillis() - lastPropagation > 1000){
 
                 int currentNumberOfDrivingTaxis = getNumberOfDrivingTaxis(activeTaxisSring, 0.001);
-                jedisCommands.del("dpb-active-taxis");
+                // TODO recheck this
+                //jedisCommands.del("dpb-active-taxis");
                 lastPropagation = System.currentTimeMillis();
 
-                System.out.println("G4T1: Current Taxis driving: " + currentNumberOfDrivingTaxis);
-                System.out.println("G4T1: Total Distance: "+(distance + tuple.getDouble(1)));
+                System.out.println("G4T1Distance: Current Taxis driving: " + currentNumberOfDrivingTaxis);
+                System.out.println("G4T1Distance: Total Distance: "+(distance + tuple.getDouble(1)));
             }
 
         } finally {

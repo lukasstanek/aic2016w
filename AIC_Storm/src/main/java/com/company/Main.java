@@ -41,8 +41,10 @@ public class Main {
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafkaSpout", spout);
 
-        builder.setBolt("getLocation", new GetLocationBolt()).shuffleGrouping("kafkaSpout");
-        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig)).shuffleGrouping("getLocation");
+        builder.setBolt("getLocation", new GetLocationBolt(jedisPoolConfig))
+               .shuffleGrouping("kafkaSpout");
+        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig))
+                .shuffleGrouping("kafkaSpout");
 
         builder.setBolt("distanceCalculator", new DistanceCalculatorBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
@@ -57,8 +59,6 @@ public class Main {
         builder.setBolt("averageSpeed", new AverageSpeedBolt(jedisPoolConfig))
             .shuffleGrouping("currentSpeed");
 
-        builder.setBolt("notifyOutOfBounds", new NotifyOutOfBoundsBolt())
-                .shuffleGrouping("kafkaSpout");
 
         builder.setBolt("notifySpeeding", new NotifySpeedingBolt())
                 .shuffleGrouping("currentSpeed");

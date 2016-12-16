@@ -41,7 +41,7 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
                 jedisCommands.set(REDIS_TAG+taxiId,""+newAverageSpeed+","+currentCount);
             }
 
-            System.out.println("G4T1: average speed for taxi "+taxiId+": " + newAverageSpeed );
+            System.out.println("G4T1AverageSpeed: average speed for taxi "+taxiId+": " + newAverageSpeed );
 
         }finally {
             if(jedisCommands != null){

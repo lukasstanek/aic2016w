@@ -31,11 +31,11 @@ public class NotifyOutOfBoundsBolt implements IRichBolt{
 
         double distanceFromCentre = Haversine.calculate(currentTaxiLat, currentTaxiLong, LAT_LIMIT, LONG_LIMIT);
         if(distanceFromCentre > 10){
-            System.out.println("G4T1: taxi: " + map.get("id") + " is is more than 10km away from centre!");
+            System.out.println("G4T1Bounds: taxi: " + map.get("id") + " is is more than 10km away from centre!");
         }
 
         if(distanceFromCentre > 15){
-            System.out.println("G4T1: taxi: " + map.get("id") + " is more than 15km away from the centre!");
+            System.out.println("G4T1Bounds: taxi: " + map.get("id") + " is more than 15km away from the centre!");
         }
 
     }

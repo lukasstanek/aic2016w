@@ -25,7 +25,7 @@ public class NotifySpeedingBolt implements IRichBolt{
         double currentSpeed = tuple.getDouble(1);
 
         if(currentSpeed > SPEED_LIMIT){
-            System.out.println("G4T1: taxi: " + taxiId + " is driving more than " + SPEED_LIMIT + "km/h");
+            System.out.println("G4T1Speeding: taxi: " + taxiId + " is driving more than " + SPEED_LIMIT + "km/h");
         }
 
     }
