@@ -47,7 +47,7 @@ public class LocationMonitor extends AbstractRedisBolt {
                 System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
 
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now out of bounds"));
-                container.append(REDIS_TAG +taxiId, "1");
+                container.set(REDIS_TAG +taxiId, "1");
             }
         }else{
             if(isOutofBounds != null){

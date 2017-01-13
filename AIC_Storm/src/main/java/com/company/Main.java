@@ -100,8 +100,9 @@ public class Main {
                 .shuffleGrouping("monitorLocation")
                 .shuffleGrouping("getLocation")
                 .shuffleGrouping("notifySpeeding")
-                .shuffleGrouping("distanceCalculator");
-
+                .shuffleGrouping("distanceCalculator")
+                .shuffleGrouping("distancePropagator", "TaxiTotal")
+                .shuffleGrouping("distancePropagator", "DistanceTotal");
 
 
 

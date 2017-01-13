@@ -12,8 +12,8 @@ class TaxiLocation:
         timestamp = splits[1]
         self.timeAsDate = timestamp
         self.timestamp = int(time.mktime(datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S').timetuple()))
-        self.longitude = splits[3]
-        self.latitude = splits[2]
+        self.latitude = splits[3]
+        self.longitude = splits[2]
 
 
     def print(self):

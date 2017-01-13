@@ -41,7 +41,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
         Long currentTimestamp = Long.parseLong((String) map.get("timestamp"));
         double currentTaxiLat = Double.parseDouble((String) map.get("latitude"));
         double currentTaxiLon = Double.parseDouble((String) map.get("longitude"));
-
+        double currentSpeed = 0;
         if(lastLocation != null){
             String[] data = lastLocation.split(",");
             int lastTimestamp = Integer.parseInt(data[0]);
@@ -57,16 +57,17 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
                 collector.ack(tuple);
                 return;
             }
-            double currentSpeed = Math.abs((dist/timeDiff)*3600);
+            currentSpeed = Math.abs((dist/timeDiff)*3600);
 
             if(Double.isNaN(currentSpeed)){
                 log.info("current speed is not a number");
             }
 
-            log.info("Current speed for Taxi #" + taxiId + ": " + currentSpeed + " km/h");
-            collector.emit(new Values(taxiId, this.getClass().getSimpleName(),currentSpeed));
-            System.out.println("G4T1CurrentSpeed: taxi: " + taxiId + " current speed: "+ currentSpeed);
         }
+
+        log.info("Current speed for Taxi #" + taxiId + ": " + currentSpeed + " km/h");
+        collector.emit(new Values(taxiId, this.getClass().getSimpleName(),currentSpeed));
+        System.out.println("G4T1CurrentSpeed: taxi: " + taxiId + " current speed: "+ currentSpeed);
 
         container.set(REDIS_TAG+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));
 

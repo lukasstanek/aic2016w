@@ -7,7 +7,9 @@ import org.apache.storm.shade.org.eclipse.jetty.util.ajax.JSON;
 import org.apache.storm.shade.org.joda.time.DateTime;
 import org.apache.storm.shade.org.json.simple.JSONObject;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import org.apache.storm.utils.Utils;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
@@ -22,11 +24,10 @@ import java.util.Set;
 public class DistancePropagator extends AbstractRedisBolt {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(DistancePropagator.class.getSimpleName());
-    long timePassed, lastPropagation;
+    long timePassed;
 
     public DistancePropagator(JedisPoolConfig config) {
         super(config);
-        lastPropagation = System.currentTimeMillis();
     }
 
     public void execute(Tuple tuple) {
@@ -35,6 +36,13 @@ public class DistancePropagator extends AbstractRedisBolt {
         try {
             jedisCommands = getInstance();
             String distanceString = jedisCommands.get("dpb-total-distance");
+
+            long lastPropagation = 0;
+            String lastPropagationString = jedisCommands.get("dpb-last-propagation");
+            if(lastPropagationString !=  null){
+                lastPropagation = Long.parseLong(lastPropagationString);
+            }
+
             if(distanceString == null)
                 distanceString = "0";
             double distance = Double.parseDouble(distanceString);
@@ -43,17 +51,20 @@ public class DistancePropagator extends AbstractRedisBolt {
 
             // Store Taxi-Ids with distance
             String activeTaxisSring = jedisCommands.get("dpb-active-taxis");
+
             activeTaxisSring = addDistanceToMapString(activeTaxisSring, tuple.getInteger(0), tuple.getDoubleByField("value"));
             jedisCommands.set("dpb-active-taxis", activeTaxisSring);
 
             // propagate number of driving taxis and total distance every 5 sec
-            if(System.currentTimeMillis() - lastPropagation > 1000){
+            if(System.currentTimeMillis() - lastPropagation > 5000){
 
                 int currentNumberOfDrivingTaxis = getNumberOfDrivingTaxis(activeTaxisSring, 0.001);
                 // TODO recheck this
                 //jedisCommands.del("dpb-active-taxis");
-                lastPropagation = System.currentTimeMillis();
 
+                jedisCommands.set("dpb-last-propagation", String.valueOf(System.currentTimeMillis()));
+                collector.emit("TaxiTotal", new Values("Stats", "TaxiTotal", currentNumberOfDrivingTaxis));
+                collector.emit("DistanceTotal", new Values("Stats", "DistanceTotal", distance + tuple.getDouble(2)));
                 System.out.println("G4T1Distance: Current Taxis driving: " + currentNumberOfDrivingTaxis);
                 System.out.println("G4T1Distance: Total Distance: "+(distance + tuple.getDouble(2)));
             }
@@ -103,6 +114,7 @@ public class DistancePropagator extends AbstractRedisBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-
+        outputFieldsDeclarer.declareStream("TaxiTotal" ,new Fields("id", "type", "value"));
+        outputFieldsDeclarer.declareStream("DistanceTotal" ,new Fields("id", "type", "value"));
     }
 }
