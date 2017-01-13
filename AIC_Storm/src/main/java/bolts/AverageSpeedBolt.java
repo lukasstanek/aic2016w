@@ -4,7 +4,9 @@ import com.sun.corba.se.spi.protocol.RequestDispatcherDefault;
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
 
@@ -26,7 +28,7 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
         try{
             jedisCommands = getInstance();
             String taxiId = input.getString(0);
-            double currentSpeed = input.getDouble(1);
+            double currentSpeed = input.getDouble(2);
 
             String storedValues = jedisCommands.get(REDIS_TAG+taxiId);
             double newAverageSpeed;
@@ -41,6 +43,7 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
                 jedisCommands.set(REDIS_TAG+taxiId,""+newAverageSpeed+","+currentCount);
             }
 
+            collector.emit(new Values(taxiId, this.getClass().getSimpleName(), newAverageSpeed));
             log.info("average speed for taxi "+taxiId+": " + newAverageSpeed );
 
         }finally {
@@ -52,6 +55,7 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
+        outputFieldsDeclarer.declare(new Fields("id", "type","value"));
 
     }
 }

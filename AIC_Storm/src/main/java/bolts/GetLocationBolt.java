@@ -44,7 +44,9 @@ public class GetLocationBolt extends AbstractRedisBolt {
 
         if(System.currentTimeMillis()/1000L - Long.parseLong(lastProgationTime) > 5){
 
-            collector.emit(new Values(input));
+            collector.emit(new Values(map.get("id"),
+                    this.getClass().getSimpleName(),
+                    map.get("latitude") + "," + map.get("longitude")));
             System.out.println(input);
             container.set(REDIS_TAG + map.get("id"), String.valueOf(System.currentTimeMillis()/1000L));
 
@@ -63,7 +65,7 @@ public class GetLocationBolt extends AbstractRedisBolt {
 
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("location"));
+        outputFieldsDeclarer.declare(new Fields("id", "type", "value"));
     }
 
 

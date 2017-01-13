@@ -46,11 +46,13 @@ public class LocationMonitor extends AbstractRedisBolt {
             if(isOutofBounds == null){
                 log.info("Taxi out of bounds #" + taxiId);
 
-                collector.emit(new Values("\"id\": \"" + taxiId + "\", \"Warning\":\"Out of Bounds\""));
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now out of bounds"));
                 container.append(REDIS_TAG +taxiId, "1");
             }
         }else{
             if(isOutofBounds != null){
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now back in bounds"));
+
                 log.info("Taxi back in bounds #" + taxiId);
                 container.del(REDIS_TAG + taxiId);
             }
@@ -65,7 +67,7 @@ public class LocationMonitor extends AbstractRedisBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("status"));
+        outputFieldsDeclarer.declare(new Fields("id", "type", "value"));
     }
 
     public Map<String, Object> getComponentConfiguration() {
