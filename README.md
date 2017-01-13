@@ -25,4 +25,5 @@ You will need docker and docker-compose, after that just run docker-compose up (
 * aic_storm
 
 
- 
+## webserver
+* simply execute 'python3 app.py' to activate the server 
