@@ -45,6 +45,7 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
 
             collector.emit(new Values(taxiId, this.getClass().getSimpleName(), newAverageSpeed));
             log.info("average speed for taxi "+taxiId+": " + newAverageSpeed );
+            System.out.println("G4T1AverageSpeed: average speed for taxi "+taxiId+": " + newAverageSpeed );
 
         }finally {
             if(jedisCommands != null){

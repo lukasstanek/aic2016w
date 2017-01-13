@@ -35,6 +35,7 @@ public class GetLocationBolt extends AbstractRedisBolt {
 
     public void execute(Tuple tuple) {
         String input = tuple.getString(0);
+
         HashMap<String, String> map = (HashMap<String, String>) JSON.parse(input);
         container = this.getInstance();
         String lastProgationTime = (String) container.get(REDIS_TAG + map.get("id"));
@@ -50,7 +51,7 @@ public class GetLocationBolt extends AbstractRedisBolt {
             System.out.println(input);
             container.set(REDIS_TAG + map.get("id"), String.valueOf(System.currentTimeMillis()/1000L));
 
-            log.info("Taxi #" + map.get("id") + " at new location lat: " +
+            System.out.println("G4T1Location: Taxi #" + map.get("id") + " at new location lat: " +
                     map.get("latitude") +
                     " lon:" + map.get("longitude"));
         }

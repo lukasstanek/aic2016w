@@ -48,11 +48,13 @@ public class Main {
 
         builder.setBolt("getLocation", new GetLocationBolt(jedisPoolConfig))
                .shuffleGrouping("kafkaSpout");
+
         builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
 
         builder.setBolt("distanceCalculator", new DistanceCalculatorBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
+
         builder.setBolt("distancePropagator", new DistancePropagator(jedisPoolConfig))
                 .shuffleGrouping("distanceCalculator");
 
@@ -63,6 +65,9 @@ public class Main {
 
         builder.setBolt("averageSpeed", new AverageSpeedBolt(jedisPoolConfig))
             .shuffleGrouping("currentSpeed");
+
+        builder.setBolt("notifySpeeding", new NotifySpeedingBolt())
+                .shuffleGrouping("currentSpeed");
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -93,7 +98,11 @@ public class Main {
                 .shuffleGrouping("currentSpeed")
                 .shuffleGrouping("averageSpeed")
                 .shuffleGrouping("monitorLocation")
-                .shuffleGrouping("getLocation");
+                .shuffleGrouping("getLocation")
+                .shuffleGrouping("notifySpeeding")
+                .shuffleGrouping("distanceCalculator");
+
+
 
 
         StormTopology topology = builder.createTopology();

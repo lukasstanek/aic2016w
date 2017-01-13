@@ -44,7 +44,7 @@ public class LocationMonitor extends AbstractRedisBolt {
         double distance = Haversine.calculate(centerLat, centerLon, taxiLat, taxiLon);
         if(distance > 15){
             if(isOutofBounds == null){
-                log.info("Taxi out of bounds #" + taxiId);
+                System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
 
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now out of bounds"));
                 container.append(REDIS_TAG +taxiId, "1");
@@ -52,8 +52,8 @@ public class LocationMonitor extends AbstractRedisBolt {
         }else{
             if(isOutofBounds != null){
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now back in bounds"));
-
                 log.info("Taxi back in bounds #" + taxiId);
+                System.out.println("G4T1Bounds: Taxi back in bounds #" + taxiId);
                 container.del(REDIS_TAG + taxiId);
             }
         }

@@ -65,6 +65,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
 
             log.info("Current speed for Taxi #" + taxiId + ": " + currentSpeed + " km/h");
             collector.emit(new Values(taxiId, this.getClass().getSimpleName(),currentSpeed));
+            System.out.println("G4T1CurrentSpeed: taxi: " + taxiId + " current speed: "+ currentSpeed);
         }
 
         container.set(REDIS_TAG+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));

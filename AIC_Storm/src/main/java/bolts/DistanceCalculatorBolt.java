@@ -45,7 +45,7 @@ public class DistanceCalculatorBolt extends AbstractRedisBolt {
                 double distance = Haversine.calculate(oldLongitude, oldLatitude, longitude, latitude);
 
                 jedisCommands.set(REDIS_TAG+"distance:"+id, (distance+currentDistance)+"");
-                this.collector.emit(new Values(id, distance));
+                this.collector.emit(new Values(id, this.getClass().getSimpleName(), distance));
             }else{
                 jedisCommands.set(REDIS_TAG+"distance:"+id, "0");
             }
@@ -62,6 +62,6 @@ public class DistanceCalculatorBolt extends AbstractRedisBolt {
 
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("id", "distance"));
+        outputFieldsDeclarer.declare(new Fields("id", "type", "value"));
     }
 }
