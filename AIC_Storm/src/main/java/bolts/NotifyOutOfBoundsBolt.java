@@ -5,7 +5,9 @@ import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
 import util.Haversine;
 
 import java.util.HashMap;
@@ -16,11 +18,13 @@ import java.util.Map;
  */
 public class NotifyOutOfBoundsBolt implements IRichBolt{
 
+    OutputCollector collector;
+
     private final double LAT_LIMIT = 0;
     private final double LONG_LIMIT = 0;
 
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
-
+        this.collector = collector;
     }
 
     public void execute(Tuple tuple) {
@@ -32,9 +36,11 @@ public class NotifyOutOfBoundsBolt implements IRichBolt{
         double distanceFromCentre = Haversine.calculate(currentTaxiLat, currentTaxiLong, LAT_LIMIT, LONG_LIMIT);
         if(distanceFromCentre > 10){
             System.out.println("G4T1Bounds: taxi: " + map.get("id") + " is is more than 10km away from centre!");
+            collector.emit(new Values(map.get("id"), this.getClass().getSimpleName(), "Taxi is out of Bounds!"));
         }
 
         if(distanceFromCentre > 15){
+            collector.emit(new Values(map.get("id"), this.getClass().getSimpleName(), "Taxi is reeaaally out of Bounds!"));
             System.out.println("G4T1Bounds: taxi: " + map.get("id") + " is more than 15km away from the centre!");
         }
 
@@ -47,7 +53,7 @@ public class NotifyOutOfBoundsBolt implements IRichBolt{
 
 
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-
+        outputFieldsDeclarer.declare(new Fields("id", "type", "value"));
     }
 
     public Map<String, Object> getComponentConfiguration() {

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Taxi Monitoring Dashboard</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+		font-family: arial;
+      }
+      #map {
+        height: 60%;
+		width: 80%;
+		margin: 0 auto;
+      }
+	  .divBox{
+	  	float: left; 
+		width: 33%;
+	  }
+
+    </style>
+  </head>
+  <body>
+	  
+	<h1>Taxi Monitoring Dashboard</h1>  
+    <div id="map"></div>
+	<div style="width: 80%; margin: 0 auto;">
+		<div id="test" class="divBox">
+			<div style="padding: 10px;" >
+				Currently driving taxis
+				<br />
+				<span id="currtentTaxisDriving"></span>
+				<br />
+				<br />
+				Overall Distance of all Taxis
+				<br />
+				<span id="overallDistance"></span>
+			</div>
+		</div>
+		<div class="divBox">
+			<div style="padding: 10px;">
+				Area violations
+				<br />
+				<span id="areaViolations">Taxi test</span>
+			</div>
+		</div>
+		<div class="divBox">
+			<div style="padding: 10px;">
+				Speeding incidents
+				<br />
+				<br />
+				<span id="speedingIncidents">TODO</span>
+			</div>
+		</div>
+		<div style="clear: left;"></div>
+	</div>
+	
+	
+<script>
+var googleMap;
+var taxis = [];	
+var areaViolations = [];
+var i = 0;
+
+
+function initWebsocketClient(){
+	if ("WebSocket" in window){
+    	
+     	var ws = new WebSocket("ws://localhost:9998/echo");
+				
+				
+        ws.onopen = function() {
+             //ws.send("Message to send");
+        };
+				
+		ws.onmessage = function (evt){ 
+        	var received_msg = evt.data;
+			document.getElementById("test").innerHTML = 
+				  	document.getElementById("test").innerHTML + "<br />" + received_msg;
+        };
+				
+    	ws.onclose = function(){ 
+			if (confirm("Websocket-Connection closed! Wanna try again?"))
+			    initWebsocketClient();
+        };
+	}
+	else
+		alert("Websockets are not supported!");
+}
+
+
+
+function updateCurrentNumTaxisDriving(val){
+	document.getElementById("currtentTaxisDriving").innerHTML = val;
+}
+
+function updateOverallDistance(val){
+	document.getElementById("overallDistance").innerHTML = val;
+}
+
+function updateTaxiLocation(id, lat, lng){
+	if (typeof taxis['taxi'+id] !== 'undefined') 
+		taxis['taxi'+id].setPosition({lat: lat, lng: lng});
+	else
+		taxis['taxi'+id] = new google.maps.Marker({
+        	position: {lat: lat, lng: lng},
+        	map: googleMap,
+        	title: 'taxi'+id
+		});
+}  
+
+function areaViolations_add(id){
+	if(areaViolations.indexOf(id) != -1)
+		return;
+	areaViolations.push(id);
+	var out = "<ul>"; 
+	areaViolations.forEach(function(entry) {
+	    out += "<li>Taxi " + entry + "</li>";
+	});
+	document.getElementById("areaViolations").innerHTML = out+"</ul>";
+}
+ 
+function areaViolations_remove(id){
+	var index = areaViolations.indexOf(item);
+	if(index == -1)
+		return;
+	areaViolations.splice(index, 1);
+
+	var out = "<ul>"; 
+	areaViolations.forEach(function(entry) {
+	    out += "<li>Taxi " + entry + "</li>";
+	});
+	document.getElementById("areaViolations").innerHTML = out+"</ul>";
+} 
+  
+function initMap() {
+  var myLatLng = {lat: 39.9164462, lng: 116.3956914};
+
+  googleMap = new google.maps.Map(document.getElementById('map'), {
+    zoom: 11,
+    center: myLatLng
+  });
+  initWebsocketClient();
+}
+
+
+
+// TESTING -----------------------------------
+
+function updateMarker(){
+	
+	updateTaxiLocation(1, 39.9164462+i, 116.3956914+i);
+	updateTaxiLocation(i, 39.9164462-i, 116.3956914);
+	i += 0.01;
+	document.getElementById("currtentTaxisDriving").innerHTML = i;
+	document.getElementById("overallDistance").innerHTML = i+234;
+	
+}
+var timer = setInterval( updateMarker, 1000);
+
+
+areaViolations_add(2);
+areaViolations_add(3);
+areaViolations_add(5);
+areaViolations_add(2);
+areaViolations_add(3);
+areaViolations_add(5);
+
+// TESTING END ---------------------------------
+
+
+
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIozUAhE4uCPm80ZVKUIM9frXC28y7ijY&signed_in=true&callback=initMap"></script>
+  </body>
+</html>
