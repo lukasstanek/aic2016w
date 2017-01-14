@@ -67,28 +67,21 @@ var i = 0;
 
 
 function initWebsocketClient(){
-	if ("WebSocket" in window){
-    	
-     	var ws = new WebSocket("ws://localhost:9998/echo");
-				
-				
-        ws.onopen = function() {
-             //ws.send("Message to send");
-        };
-				
-		ws.onmessage = function (evt){ 
-        	var received_msg = evt.data;
-			document.getElementById("test").innerHTML = 
-				  	document.getElementById("test").innerHTML + "<br />" + received_msg;
-        };
-				
-    	ws.onclose = function(){ 
-			if (confirm("Websocket-Connection closed! Wanna try again?"))
-			    initWebsocketClient();
-        };
+
+
+	var evtSource = new EventSource("/stream");
+
+	evtSource.onmessage = function(e) {
+  		var str = e.data;
+		try{
+  			var obj = JSON.parse(str.substr(2,str.length-3));  
+			
+			updateTaxiLocation(obj.id, parseFloat(obj.latitude), parseFloat(obj.longitude));
+		}
+		catch(err){
+			console.log("error width: "+str.substr(2,str.length-3));
+		}
 	}
-	else
-		alert("Websockets are not supported!");
 }
 
 
@@ -101,12 +94,12 @@ function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
 
-function updateTaxiLocation(id, lat, lng){
+function updateTaxiLocation(id, lati, longi){
 	if (typeof taxis['taxi'+id] !== 'undefined') 
-		taxis['taxi'+id].setPosition({lat: lat, lng: lng});
+		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
 	else
 		taxis['taxi'+id] = new google.maps.Marker({
-        	position: {lat: lat, lng: lng},
+        	position: {lat: lati, lng: longi},
         	map: googleMap,
         	title: 'taxi'+id
 		});
@@ -152,8 +145,8 @@ function initMap() {
 
 function updateMarker(){
 	
-	updateTaxiLocation(1, 39.9164462+i, 116.3956914+i);
-	updateTaxiLocation(i, 39.9164462-i, 116.3956914);
+	//updateTaxiLocation(1, 39.9164462+i, 116.3956914+i);
+	//updateTaxiLocation(i, 39.9164462-i, 116.3956914);
 	i += 0.01;
 	document.getElementById("currtentTaxisDriving").innerHTML = i;
 	document.getElementById("overallDistance").innerHTML = i+234;
