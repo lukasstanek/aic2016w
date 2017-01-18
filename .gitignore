@@ -2,3 +2,5 @@ data/*
 .idea/
 /AIC_Storm/AIC_Storm.iml
 /G4T1.iml
+aic.iml
+venv/

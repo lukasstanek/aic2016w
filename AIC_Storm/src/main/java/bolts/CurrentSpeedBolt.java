@@ -2,10 +2,7 @@ package bolts;
 
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
-import org.apache.storm.shade.org.apache.commons.codec.language.DoubleMetaphone;
-import org.apache.storm.shade.org.apache.curator.utils.InternalACLProvider;
 import org.apache.storm.shade.org.eclipse.jetty.util.ajax.JSON;
-import org.apache.storm.shade.org.jgrapht.experimental.permutation.IntegerPermutationIter;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
@@ -19,7 +16,7 @@ import java.util.HashMap;
 
 
 public class CurrentSpeedBolt extends AbstractRedisBolt {
-    private static final Logger log = LoggerFactory.getLogger(LocationMonitor.class.getSimpleName());
+    private static final Logger log = LoggerFactory.getLogger(NotifyOutofBoundsBolt.class.getSimpleName());
     private double centerLat = 39.916320;
     private double centerLon = 116.397187;
     private JedisCommands container;
