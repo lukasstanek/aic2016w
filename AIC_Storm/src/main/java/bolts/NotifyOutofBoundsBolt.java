@@ -18,14 +18,15 @@ import java.util.Map;
 /**
  * Created by lukas on 11/12/16.
  */
-public class LocationMonitor extends AbstractRedisBolt {
-    private static final Logger log = LoggerFactory.getLogger(LocationMonitor.class.getSimpleName());
+public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
+    private static final Logger log = LoggerFactory.getLogger(NotifyOutofBoundsBolt.class.getSimpleName());
     private double centerLat = 39.916320;
     private double centerLon = 116.397187;
     private JedisCommands container;
     private final String REDIS_TAG = "OutofBounds";
+    private final String REDIS_15_TAG = "OutofBounds15km";
 
-    public LocationMonitor(JedisPoolConfig config) {
+    public NotifyOutofBoundsBolt(JedisPoolConfig config) {
         super(config);
     }
 
@@ -42,22 +43,36 @@ public class LocationMonitor extends AbstractRedisBolt {
         double taxiLon = Double.parseDouble(map.get("longitude"));
 
         double distance = Haversine.calculate(centerLat, centerLon, taxiLat, taxiLon);
-        if(distance > 15){
+        if(distance > 10){
             if(isOutofBounds == null){
                 System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
 
-                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now out of bounds"));
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), ">10"));
                 container.set(REDIS_TAG +taxiId, "1");
             }
         }else{
             if(isOutofBounds != null){
-                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "Taxi is now back in bounds"));
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "<10"));
                 log.info("Taxi back in bounds #" + taxiId);
                 System.out.println("G4T1Bounds: Taxi back in bounds #" + taxiId);
                 container.del(REDIS_TAG + taxiId);
             }
         }
+        if(distance > 15){
+            if(isOutofBounds == null){
+                System.out.println("G4T1Bounds: Taxi out of 15km radius #" + taxiId);
 
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), ">15"));
+                container.set(REDIS_15_TAG +taxiId, "1");
+            }
+        }else{
+            if(isOutofBounds != null){
+                collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "<15"));
+                log.info("Taxi back in bounds #" + taxiId);
+                System.out.println("G4T1Bounds: Taxi back in 15km radius #" + taxiId);
+                container.del(REDIS_15_TAG + taxiId);
+            }
+        }
         this.returnInstance(container);
         collector.ack(tuple);
     }

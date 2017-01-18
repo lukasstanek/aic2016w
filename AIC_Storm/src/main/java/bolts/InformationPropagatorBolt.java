@@ -1,32 +1,27 @@
 package bolts;
 
-import org.apache.log4j.Logger;
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.shade.org.eclipse.jetty.util.ajax.JSON;
-import org.apache.storm.shade.org.joda.time.DateTime;
 import org.apache.storm.shade.org.json.simple.JSONObject;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
-import org.apache.storm.utils.Utils;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by thomas on 12.11.16.
  */
-public class DistancePropagator extends AbstractRedisBolt {
+public class InformationPropagatorBolt extends AbstractRedisBolt {
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(DistancePropagator.class.getSimpleName());
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(InformationPropagatorBolt.class.getSimpleName());
     long timePassed;
 
-    public DistancePropagator(JedisPoolConfig config) {
+    public InformationPropagatorBolt(JedisPoolConfig config) {
         super(config);
     }
 

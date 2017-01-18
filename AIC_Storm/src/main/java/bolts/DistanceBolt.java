@@ -15,10 +15,10 @@ import java.util.HashMap;
 /**
  * Created by thomas on 12.11.16.
  */
-public class DistanceCalculatorBolt extends AbstractRedisBolt {
+public class DistanceBolt extends AbstractRedisBolt {
     private final String REDIS_TAG = "DCB-";
 
-    public DistanceCalculatorBolt(JedisPoolConfig config) {
+    public DistanceBolt(JedisPoolConfig config) {
         super(config);
     }
 

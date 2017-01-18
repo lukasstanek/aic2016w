@@ -3,11 +3,7 @@ package bolts;
 
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
-import org.apache.storm.shade.org.apache.curator.framework.api.SyncBuilder;
 import org.apache.storm.shade.org.eclipse.jetty.util.ajax.JSON;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
@@ -22,13 +18,13 @@ import java.util.Map;
 /**
  * Created by lingfan on 03.11.16.
  */
-public class GetLocationBolt extends AbstractRedisBolt {
-    private static final Logger log = LoggerFactory.getLogger(GetLocationBolt.class.getSimpleName());
+public class LocationBolt extends AbstractRedisBolt {
+    private static final Logger log = LoggerFactory.getLogger(LocationBolt.class.getSimpleName());
 
     private JedisCommands container;
     private final String REDIS_TAG = "LastLocationPropagation";
 
-    public GetLocationBolt(JedisPoolConfig config) {
+    public LocationBolt(JedisPoolConfig config) {
         super(config);
     }
 

@@ -15,7 +15,6 @@ import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Tuple;
-import org.apache.storm.utils.Utils;
 import util.Haversine;
 
 import java.util.Properties;
@@ -46,16 +45,16 @@ public class Main {
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout("kafkaSpout", spout);
 
-        builder.setBolt("getLocation", new GetLocationBolt(jedisPoolConfig))
+        builder.setBolt("getLocation", new LocationBolt(jedisPoolConfig))
                .shuffleGrouping("kafkaSpout");
 
-        builder.setBolt("monitorLocation", new LocationMonitor(jedisPoolConfig))
+        builder.setBolt("monitorLocation", new NotifyOutofBoundsBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
 
-        builder.setBolt("distanceCalculator", new DistanceCalculatorBolt(jedisPoolConfig))
+        builder.setBolt("distanceCalculator", new DistanceBolt(jedisPoolConfig))
                 .shuffleGrouping("kafkaSpout");
 
-        builder.setBolt("distancePropagator", new DistancePropagator(jedisPoolConfig))
+        builder.setBolt("distancePropagator", new InformationPropagatorBolt(jedisPoolConfig))
                 .shuffleGrouping("distanceCalculator");
 
 
