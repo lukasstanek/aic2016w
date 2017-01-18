@@ -14,6 +14,9 @@ public class Constants {
     public static final String LOCATION_BOLT = "locationBolt";
     public static final String NOTIFY_OOB_BOLT = "notifyOutOfBoundsBolt";
     public static final String NOTIFY_SPEEDING_BOLT = "notifySpeedingBolt";
+    public static final String  TOPOLOGY = "taxilocSample";
+    public static final String OUTPUT_BOLT = "kafkaOutput";
+    public static final String  KAFKA_OUTPUT = "BoltOutput";
 
     // redis tags
     public static final String AVG_SPEED_AVG_SPEED_BOLT = "AVG_";
@@ -25,5 +28,7 @@ public class Constants {
     public static final String TOTAL_DISTANCE_TAG_DISTANCE_PROPAGATOR_BOLT = "DPB_TOTAL_DISTANCE";
     public static final String ACTIVE_TAXIS_TAG_DISTANCE_PROPAGATOR_BOLT = "DPB_ACTIVE_TAXIS";
     public static final String LAST_PROPAGATION_GET_LOCATION_BOLT = "LAST_PROPAGATION_";
+    public static final String OUT_OF_BOUNDS_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_";
+    public static final String OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_15";
 
 }

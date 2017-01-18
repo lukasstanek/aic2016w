@@ -15,6 +15,8 @@ import redis.clients.jedis.JedisCommands;
 import java.util.HashMap;
 import java.util.Map;
 
+import static util.Constants.LAST_PROPAGATION_GET_LOCATION_BOLT;
+
 /**
  * Created by lingfan on 03.11.16.
  */
@@ -22,7 +24,6 @@ public class LocationBolt extends AbstractRedisBolt {
     private static final Logger log = LoggerFactory.getLogger(LocationBolt.class.getSimpleName());
 
     private JedisCommands container;
-    private final String REDIS_TAG = "LastLocationPropagation";
 
     public LocationBolt(JedisPoolConfig config) {
         super(config);
@@ -34,7 +35,7 @@ public class LocationBolt extends AbstractRedisBolt {
 
         HashMap<String, String> map = (HashMap<String, String>) JSON.parse(input);
         container = this.getInstance();
-        String lastProgationTime = (String) container.get(REDIS_TAG + map.get("id"));
+        String lastProgationTime = (String) container.get(LAST_PROPAGATION_GET_LOCATION_BOLT + map.get("id"));
         if(lastProgationTime == null){
             lastProgationTime = "0";
         }
@@ -45,7 +46,7 @@ public class LocationBolt extends AbstractRedisBolt {
                     this.getClass().getSimpleName(),
                     map.get("latitude") + "," + map.get("longitude")));
             System.out.println(input);
-            container.set(REDIS_TAG + map.get("id"), String.valueOf(System.currentTimeMillis()/1000L));
+            container.set(LAST_PROPAGATION_GET_LOCATION_BOLT + map.get("id"), String.valueOf(System.currentTimeMillis()/1000L));
 
             System.out.println("G4T1Location: Taxi #" + map.get("id") + " at new location lat: " +
                     map.get("latitude") +

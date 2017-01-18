@@ -12,11 +12,14 @@ import util.Haversine;
 
 import java.util.HashMap;
 
+import static util.Constants.DISTANCE_TAG_DISTANCE_CALCULATOR_BOLT;
+import static util.Constants.LATITUDE_TAG_DISTANCE_CALCULATOR_BOLT;
+import static util.Constants.LONGITUDE_TAG_DISTANCE_CALCULATOR_BOLT;
+
 /**
  * Created by thomas on 12.11.16.
  */
 public class DistanceBolt extends AbstractRedisBolt {
-    private final String REDIS_TAG = "DCB-";
 
     public DistanceBolt(JedisPoolConfig config) {
         super(config);
@@ -35,26 +38,26 @@ public class DistanceBolt extends AbstractRedisBolt {
 
         try {
             jedisCommands = getInstance();
-            String distanceString = jedisCommands.get(REDIS_TAG+"distance:"+id);
+            String distanceString = jedisCommands.get(DISTANCE_TAG_DISTANCE_CALCULATOR_BOLT+id);
 
             double currentDistance = 0, distance = 0;
             if (distanceString != null) {
-                double oldLongitude = Double.parseDouble(jedisCommands.get(REDIS_TAG+"longitude:"+id));
-                double oldLatitude = Double.parseDouble(jedisCommands.get(REDIS_TAG+"latitude:"+id));
+                double oldLongitude = Double.parseDouble(jedisCommands.get(LONGITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id));
+                double oldLatitude = Double.parseDouble(jedisCommands.get(LATITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id));
                 currentDistance = Double.parseDouble(distanceString);
 
                 distance = Haversine.calculate(oldLongitude, oldLatitude, longitude, latitude);
 
 
             }else{
-                jedisCommands.set(REDIS_TAG+"distance:"+id, "0");
+                jedisCommands.set(DISTANCE_TAG_DISTANCE_CALCULATOR_BOLT+id, "0");
             }
 
-            jedisCommands.set(REDIS_TAG+"distance:"+id, (distance+currentDistance)+"");
+            jedisCommands.set(DISTANCE_TAG_DISTANCE_CALCULATOR_BOLT+id, (distance+currentDistance)+"");
             this.collector.emit(new Values(id, this.getClass().getSimpleName(), distance));
 
-            jedisCommands.set(REDIS_TAG+"longitude:"+id, longitude+"");
-            jedisCommands.set(REDIS_TAG+"latitude:"+id, latitude+"");
+            jedisCommands.set(LONGITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id, longitude+"");
+            jedisCommands.set(LATITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id, latitude+"");
 
         } finally {
             if (jedisCommands != null) {

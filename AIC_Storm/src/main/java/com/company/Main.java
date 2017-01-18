@@ -20,6 +20,8 @@ import util.Haversine;
 import java.util.Properties;
 import java.util.UUID;
 
+import static util.Constants.*;
+
 public class Main {
 
 
@@ -35,7 +37,7 @@ public class Main {
         //zookeeper brokerhost
         BrokerHosts host = new ZkHosts("172.17.0.1:2181");
         //kafka config
-        SpoutConfig spoutConfig = new SpoutConfig(host,"taxilocs","/taxilocs", UUID.randomUUID().toString());
+        SpoutConfig spoutConfig = new SpoutConfig(host,DATASOURCE,"/taxilocs", UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
 
         //kafka spout
@@ -45,30 +47,30 @@ public class Main {
 
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
-        builder.setSpout("kafkaSpout", spout);
+        builder.setSpout(KAFKA_SPOUT, spout);
 
-        builder.setBolt("getLocation", new LocationBolt(jedisPoolConfig))
-               .shuffleGrouping("kafkaSpout");
+        builder.setBolt(LOCATION_BOLT, new LocationBolt(jedisPoolConfig))
+               .shuffleGrouping(KAFKA_SPOUT);
 
-        builder.setBolt("monitorLocation", new NotifyOutofBoundsBolt(jedisPoolConfig))
-                .shuffleGrouping("kafkaSpout");
+        builder.setBolt(NOTIFY_OOB_BOLT, new NotifyOutofBoundsBolt(jedisPoolConfig))
+                .shuffleGrouping(KAFKA_SPOUT);
 
-        builder.setBolt("distanceCalculator", new DistanceBolt(jedisPoolConfig))
-                .shuffleGrouping("kafkaSpout");
+        builder.setBolt(DISTANCE_BOLT, new DistanceBolt(jedisPoolConfig))
+                .shuffleGrouping(KAFKA_SPOUT);
 
-        builder.setBolt("distancePropagator", new InformationPropagatorBolt(jedisPoolConfig))
-                .shuffleGrouping("distanceCalculator");
-
-
-        builder.setBolt("currentSpeed", new CurrentSpeedBolt(jedisPoolConfig))
-                .shuffleGrouping("kafkaSpout");
+        builder.setBolt(INFORMATION_PROPAGATOR_BOLT, new InformationPropagatorBolt(jedisPoolConfig))
+                .shuffleGrouping(DISTANCE_BOLT);
 
 
-        builder.setBolt("averageSpeed", new AverageSpeedBolt(jedisPoolConfig))
-            .shuffleGrouping("currentSpeed");
+        builder.setBolt(CURRENT_SPEED_BOLT, new CurrentSpeedBolt(jedisPoolConfig))
+                .shuffleGrouping(KAFKA_SPOUT);
 
-        builder.setBolt("notifySpeeding", new NotifySpeedingBolt())
-                .shuffleGrouping("currentSpeed");
+
+        builder.setBolt(AVERAGE_SPEED_BOLT, new AverageSpeedBolt(jedisPoolConfig))
+            .shuffleGrouping(CURRENT_SPEED_BOLT);
+
+        builder.setBolt(NOTIFY_SPEEDING_BOLT, new NotifySpeedingBolt())
+                .shuffleGrouping(CURRENT_SPEED_BOLT);
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -80,7 +82,7 @@ public class Main {
                 .withProducerProperties(props)
                 .withTopicSelector(new KafkaTopicSelector() {
                     public String getTopic(Tuple tuple) {
-                        return "BoltOutput";
+                        return KAFKA_OUTPUT;
                     }
                 })
                 .withTupleToKafkaMapper(new TupleToKafkaMapper() {
@@ -95,20 +97,20 @@ public class Main {
                     }
                 });
 
-        builder.setBolt("kafkaOutput", kafkaBolt)
-                .shuffleGrouping("currentSpeed")
-                .shuffleGrouping("averageSpeed")
-                .shuffleGrouping("monitorLocation")
-                .shuffleGrouping("getLocation")
-                .shuffleGrouping("notifySpeeding")
-                .shuffleGrouping("distanceCalculator")
-                .shuffleGrouping("distancePropagator", "TaxiTotal")
-                .shuffleGrouping("distancePropagator", "DistanceTotal");
+        builder.setBolt(OUTPUT_BOLT, kafkaBolt)
+                .shuffleGrouping(CURRENT_SPEED_BOLT)
+                .shuffleGrouping(AVERAGE_SPEED_BOLT)
+                .shuffleGrouping(NOTIFY_OOB_BOLT)
+                .shuffleGrouping(LOCATION_BOLT)
+                .shuffleGrouping(NOTIFY_SPEEDING_BOLT)
+                .shuffleGrouping(DISTANCE_BOLT)
+                .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "TaxiTotal")
+                .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "DistanceTotal");
 
 
 
         StormTopology topology = builder.createTopology();
-        cluster.submitTopology("taxilocSample",config,topology);
+        cluster.submitTopology(TOPOLOGY,config,topology);
         //cluster.shutdown();
     }
 

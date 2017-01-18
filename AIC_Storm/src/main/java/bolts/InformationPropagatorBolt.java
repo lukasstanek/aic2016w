@@ -13,6 +13,10 @@ import redis.clients.jedis.JedisCommands;
 
 import java.util.HashMap;
 
+import static util.Constants.ACTIVE_TAXIS_TAG_DISTANCE_PROPAGATOR_BOLT;
+import static util.Constants.LAST_PROPAGATION_TAG_DISTANCE_PROPAGATOR_BOLT;
+import static util.Constants.TOTAL_DISTANCE_TAG_DISTANCE_PROPAGATOR_BOLT;
+
 /**
  * Created by thomas on 12.11.16.
  */
@@ -30,10 +34,10 @@ public class InformationPropagatorBolt extends AbstractRedisBolt {
 
         try {
             jedisCommands = getInstance();
-            String distanceString = jedisCommands.get("dpb-total-distance");
+            String distanceString = jedisCommands.get(TOTAL_DISTANCE_TAG_DISTANCE_PROPAGATOR_BOLT);
 
             long lastPropagation = 0;
-            String lastPropagationString = jedisCommands.get("dpb-last-propagation");
+            String lastPropagationString = jedisCommands.get(LAST_PROPAGATION_TAG_DISTANCE_PROPAGATOR_BOLT);
             if(lastPropagationString !=  null){
                 lastPropagation = Long.parseLong(lastPropagationString);
             }
@@ -42,13 +46,13 @@ public class InformationPropagatorBolt extends AbstractRedisBolt {
                 distanceString = "0";
             double distance = Double.parseDouble(distanceString);
 
-            jedisCommands.set("dpb-total-distance", (distance + tuple.getDoubleByField("value"))+"");
+            jedisCommands.set(TOTAL_DISTANCE_TAG_DISTANCE_PROPAGATOR_BOLT, (distance + tuple.getDoubleByField("value"))+"");
 
             // Store Taxi-Ids with distance
-            String activeTaxisSring = jedisCommands.get("dpb-active-taxis");
+            String activeTaxisSring = jedisCommands.get(ACTIVE_TAXIS_TAG_DISTANCE_PROPAGATOR_BOLT);
 
             activeTaxisSring = addDistanceToMapString(activeTaxisSring, tuple.getInteger(0), tuple.getDoubleByField("value"));
-            jedisCommands.set("dpb-active-taxis", activeTaxisSring);
+            jedisCommands.set(ACTIVE_TAXIS_TAG_DISTANCE_PROPAGATOR_BOLT, activeTaxisSring);
 
             // propagate number of driving taxis and total distance every 5 sec
             if(System.currentTimeMillis() - lastPropagation > 5000){
@@ -57,7 +61,7 @@ public class InformationPropagatorBolt extends AbstractRedisBolt {
                 // TODO recheck this
                 //jedisCommands.del("dpb-active-taxis");
 
-                jedisCommands.set("dpb-last-propagation", String.valueOf(System.currentTimeMillis()));
+                jedisCommands.set(LAST_PROPAGATION_TAG_DISTANCE_PROPAGATOR_BOLT, String.valueOf(System.currentTimeMillis()));
                 collector.emit("TaxiTotal", new Values("Stats", "TaxiTotal", currentNumberOfDrivingTaxis));
                 collector.emit("DistanceTotal", new Values("Stats", "DistanceTotal", distance + tuple.getDouble(2)));
                 System.out.println("G4T1Distance: Current Taxis driving: " + currentNumberOfDrivingTaxis);

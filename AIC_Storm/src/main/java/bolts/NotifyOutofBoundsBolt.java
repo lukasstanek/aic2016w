@@ -15,6 +15,9 @@ import util.Haversine;
 import java.util.HashMap;
 import java.util.Map;
 
+import static util.Constants.OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT;
+import static util.Constants.OUT_OF_BOUNDS_NOTIFY_OOB_BOLT;
+
 /**
  * Created by lukas on 11/12/16.
  */
@@ -23,8 +26,6 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
     private double centerLat = 39.916320;
     private double centerLon = 116.397187;
     private JedisCommands container;
-    private final String REDIS_TAG = "OutofBounds";
-    private final String REDIS_15_TAG = "OutofBounds15km";
 
     public NotifyOutofBoundsBolt(JedisPoolConfig config) {
         super(config);
@@ -35,7 +36,7 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
         String input = tuple.getString(0);
         HashMap<String, String> map = (HashMap<String, String>) JSON.parse(input);
         container = this.getInstance();
-        String isOutofBounds = container.get(REDIS_TAG + map.get("id"));
+        String isOutofBounds = container.get(OUT_OF_BOUNDS_NOTIFY_OOB_BOLT + map.get("id"));
 
 
         String taxiId = map.get("id");
@@ -48,14 +49,14 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
                 System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
 
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), ">10"));
-                container.set(REDIS_TAG +taxiId, "1");
+                container.set(OUT_OF_BOUNDS_NOTIFY_OOB_BOLT +taxiId, "1");
             }
         }else{
             if(isOutofBounds != null){
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "<10"));
                 log.info("Taxi back in bounds #" + taxiId);
                 System.out.println("G4T1Bounds: Taxi back in bounds #" + taxiId);
-                container.del(REDIS_TAG + taxiId);
+                container.del(OUT_OF_BOUNDS_NOTIFY_OOB_BOLT + taxiId);
             }
         }
         if(distance > 15){
@@ -63,14 +64,14 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
                 System.out.println("G4T1Bounds: Taxi out of 15km radius #" + taxiId);
 
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), ">15"));
-                container.set(REDIS_15_TAG +taxiId, "1");
+                container.set(OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT +taxiId, "1");
             }
         }else{
             if(isOutofBounds != null){
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), "<15"));
                 log.info("Taxi back in bounds #" + taxiId);
                 System.out.println("G4T1Bounds: Taxi back in 15km radius #" + taxiId);
-                container.del(REDIS_15_TAG + taxiId);
+                container.del(OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT + taxiId);
             }
         }
         this.returnInstance(container);

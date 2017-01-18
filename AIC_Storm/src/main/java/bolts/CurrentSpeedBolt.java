@@ -14,13 +14,14 @@ import util.Haversine;
 
 import java.util.HashMap;
 
+import static util.Constants.LAST_LOCATION_CURRENT_SPEED_BOLT;
+
 
 public class CurrentSpeedBolt extends AbstractRedisBolt {
     private static final Logger log = LoggerFactory.getLogger(NotifyOutofBoundsBolt.class.getSimpleName());
     private double centerLat = 39.916320;
     private double centerLon = 116.397187;
     private JedisCommands container;
-    private final String REDIS_TAG = "LastLocation";
 
     public CurrentSpeedBolt(JedisPoolConfig config) {
         super(config);
@@ -32,7 +33,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
         HashMap<String, Object> map = (HashMap<String, Object>) JSON.parse(input);
         container = this.getInstance();
 
-        String lastLocation = container.get(REDIS_TAG + map.get("id"));
+        String lastLocation = container.get(LAST_LOCATION_CURRENT_SPEED_BOLT + map.get("id"));
 
         String taxiId = (String) map.get("id");
         Long currentTimestamp = Long.parseLong((String) map.get("timestamp"));
@@ -66,7 +67,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
         collector.emit(new Values(taxiId, this.getClass().getSimpleName(),currentSpeed));
         System.out.println("G4T1CurrentSpeed: taxi: " + taxiId + " current speed: "+ currentSpeed);
 
-        container.set(REDIS_TAG+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));
+        container.set(LAST_LOCATION_CURRENT_SPEED_BOLT+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));
 
         this.returnInstance(container);
         collector.ack(tuple);

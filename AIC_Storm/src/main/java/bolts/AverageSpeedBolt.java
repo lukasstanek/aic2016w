@@ -10,13 +10,14 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
 
+import static util.Constants.AVG_SPEED_AVG_SPEED_BOLT;
+
 /**
  * Created by ling on 08.12.16.
  */
 public class AverageSpeedBolt extends AbstractRedisBolt {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AverageSpeedBolt.class.getSimpleName());
-    private final String REDIS_TAG = "AVG-";
 
     public AverageSpeedBolt(JedisPoolConfig config) {
         super(config);
@@ -30,17 +31,17 @@ public class AverageSpeedBolt extends AbstractRedisBolt {
             String taxiId = input.getString(0);
             double currentSpeed = input.getDouble(2);
 
-            String storedValues = jedisCommands.get(REDIS_TAG+taxiId);
+            String storedValues = jedisCommands.get(AVG_SPEED_AVG_SPEED_BOLT+taxiId);
             double newAverageSpeed;
             if(storedValues == null){
                 newAverageSpeed = currentSpeed;
-                jedisCommands.set(REDIS_TAG+taxiId, ""+newAverageSpeed+", 1");
+                jedisCommands.set(AVG_SPEED_AVG_SPEED_BOLT+taxiId, ""+newAverageSpeed+", 1");
             }else{
                 double currentAverageSpeed = Float.parseFloat(storedValues.split(",")[0]);
                 double currentCount = Float.parseFloat(storedValues.split(",")[1]);
                 newAverageSpeed = (currentAverageSpeed*currentCount + currentSpeed)/(currentCount + 1);
                 currentCount++;
-                jedisCommands.set(REDIS_TAG+taxiId,""+newAverageSpeed+","+currentCount);
+                jedisCommands.set(AVG_SPEED_AVG_SPEED_BOLT+taxiId,""+newAverageSpeed+","+currentCount);
             }
 
             collector.emit(new Values(taxiId, this.getClass().getSimpleName(), newAverageSpeed));
