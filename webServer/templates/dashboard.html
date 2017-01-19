@@ -73,13 +73,41 @@ function initWebsocketClient(){
 
 	evtSource.onmessage = function(e) {
   		var str = e.data;
+  		console.log(str);
+
+
+
 		try{
-  			var obj = JSON.parse(str.substr(2,str.length-3));  
-			
-			updateTaxiLocation(obj.id, parseFloat(obj.latitude), parseFloat(obj.longitude));
+  			//var obj = JSON.parse(str.substr(2,str.length-3));
+  			var fields = str.split(",");
+
+			/*switch(fields[1]){
+				case 'NotifyOutofBounds':
+					if(fields[2] == ">10")
+						areaViolations_add(fields[0]);
+					if(fields[2] == "<10")
+						areaViolations_remove(fields[0]);
+					//TODO
+				break;
+				case 'NotifySpeedingBolt':
+					//TODO
+				break;
+				case 'TaxiTotal':
+					updateCurrentNumTaxisDriving(fields[2]);
+				break;
+				case 'DistanceTotal':
+					updateOverallDistance(fields[2]);
+				break;
+				break;
+				case 'LocationBolt':
+					updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
+				break;
+			}*/
+
+			//updateTaxiLocation(obj.id, parseFloat(obj.latitude), parseFloat(obj.longitude));
 		}
 		catch(err){
-			console.log("error width: "+str.substr(2,str.length-3));
+			//console.log("error width: "+str.substr(2,str.length-3));
 		}
 	}
 }
@@ -141,28 +169,6 @@ function initMap() {
 
 
 
-// TESTING -----------------------------------
-
-function updateMarker(){
-	
-	//updateTaxiLocation(1, 39.9164462+i, 116.3956914+i);
-	//updateTaxiLocation(i, 39.9164462-i, 116.3956914);
-	i += 0.01;
-	document.getElementById("currtentTaxisDriving").innerHTML = i;
-	document.getElementById("overallDistance").innerHTML = i+234;
-	
-}
-var timer = setInterval( updateMarker, 1000);
-
-
-areaViolations_add(2);
-areaViolations_add(3);
-areaViolations_add(5);
-areaViolations_add(2);
-areaViolations_add(3);
-areaViolations_add(5);
-
-// TESTING END ---------------------------------
 
 
 
