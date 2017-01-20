@@ -43,7 +43,7 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
         double taxiLat = Double.parseDouble(map.get("latitude"));
         double taxiLon = Double.parseDouble(map.get("longitude"));
 
-        double distance = Haversine.calculate(centerLat, centerLon, taxiLat, taxiLon);
+        double distance = Haversine.calculate(centerLat, centerLon, taxiLon, taxiLat);
         if(distance > 10){
             if(isOutofBounds == null){
                 System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
@@ -62,7 +62,6 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
         if(distance > 15){
             if(isOutofBounds == null){
                 System.out.println("G4T1Bounds: Taxi out of 15km radius #" + taxiId);
-
                 collector.emit(new Values(taxiId, this.getClass().getSimpleName(), ">15"));
                 container.set(OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT +taxiId, "1");
             }

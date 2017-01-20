@@ -25,17 +25,19 @@
   </head>
   <body>
 	  
-	<h1>Taxi Monitoring Dashboard</h1>  
+	<h1 style="margin-left: 20px;">Taxi Monitoring Dashboard</h1>
     <div id="map"></div>
 	<div style="width: 80%; margin: 0 auto;">
 		<div id="test" class="divBox">
 			<div style="padding: 10px;" >
 				Currently driving taxis
 				<br />
+				<br />
 				<span id="currtentTaxisDriving"></span>
 				<br />
 				<br />
 				Overall Distance of all Taxis
+				<br />
 				<br />
 				<span id="overallDistance"></span>
 			</div>
@@ -44,15 +46,19 @@
 			<div style="padding: 10px;">
 				Area violations
 				<br />
-				<span id="areaViolations">Taxi test</span>
+				<br />
+				<div id="areaViolations" style="background-color: #f2f2f2; height: 120px; width: 80%; overflow: auto;"></div>
+
 			</div>
 		</div>
 		<div class="divBox">
 			<div style="padding: 10px;">
-				Speeding incidents
+				Console
 				<br />
 				<br />
-				<span id="speedingIncidents">TODO</span>
+				<div style="background-color: #f2f2f2; height: 120px; overflow: auto;">
+					<ul id="console"></ul>
+				</div>
 			</div>
 		</div>
 		<div style="clear: left;"></div>
@@ -61,9 +67,9 @@
 	
 <script>
 var googleMap;
-var taxis = [];	
+var taxis = [];
+var ignore = [];
 var areaViolations = [];
-var i = 0;
 
 
 function initWebsocketClient(){
@@ -73,24 +79,30 @@ function initWebsocketClient(){
 
 	evtSource.onmessage = function(e) {
   		var str = e.data;
-  		console.log(str);
-
-
+  		//console.log(str);
 
 		try{
-  			//var obj = JSON.parse(str.substr(2,str.length-3));
-  			var fields = str.split(",");
+  			var fields = str.substr(2,str.length-3).split(",");
 
-			/*switch(fields[1]){
-				case 'NotifyOutofBounds':
+			switch(fields[1]){
+				case 'NotifyOutofBoundsBolt':
 					if(fields[2] == ">10")
 						areaViolations_add(fields[0]);
 					if(fields[2] == "<10")
 						areaViolations_remove(fields[0]);
-					//TODO
+					if(fields[2] == ">15"){
+						marker_set_visible(fields[0], false);
+						console_output("Taxi "+fields[0]+" left area");
+						taxi_set_ignore(fields[0], true);
+					}
+					if(fields[2] == "<15"){
+						marker_set_visible(fields[0], true);
+						console_output("Taxi "+fields[0]+" entered area");
+						taxi_set_ignore(fields[0], false);
+					}
 				break;
 				case 'NotifySpeedingBolt':
-					//TODO
+					console_output("Taxi "+fields[0]+" is speeding");
 				break;
 				case 'TaxiTotal':
 					updateCurrentNumTaxisDriving(fields[2]);
@@ -98,21 +110,34 @@ function initWebsocketClient(){
 				case 'DistanceTotal':
 					updateOverallDistance(fields[2]);
 				break;
-				break;
 				case 'LocationBolt':
 					updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
 				break;
-			}*/
+			}
 
-			//updateTaxiLocation(obj.id, parseFloat(obj.latitude), parseFloat(obj.longitude));
 		}
 		catch(err){
-			//console.log("error width: "+str.substr(2,str.length-3));
+			console.log("error with: "+str);
 		}
 	}
 }
 
+function console_output(val){
+	var li = document.createElement("li");
+	li.innerHTML = new Date().toLocaleTimeString() +": "+ val;
+	document.getElementById("console").insertBefore(
+		li, document.getElementById("console").firstChild);
+}
 
+function marker_set_visible(id, visible){
+	if (typeof taxis['taxi'+id] === 'undefined')
+		taxis['taxi'+id] = new google.maps.Marker({
+        	position: {lat: 1, lng: 1},
+        	map: googleMap,
+        	title: 'taxi'+id
+		});
+	taxis['taxi'+id].setVisible(visible);
+}
 
 function updateCurrentNumTaxisDriving(val){
 	document.getElementById("currtentTaxisDriving").innerHTML = val;
@@ -122,7 +147,7 @@ function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
 
-function updateTaxiLocation(id, lati, longi){
+function updateTaxiLocation(id, longi, lati){
 	if (typeof taxis['taxi'+id] !== 'undefined') 
 		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
 	else
@@ -137,24 +162,46 @@ function areaViolations_add(id){
 	if(areaViolations.indexOf(id) != -1)
 		return;
 	areaViolations.push(id);
-	var out = "<ul>"; 
+	areaViolations_draw();
+}
+
+function areaViolations_draw(){
+	var out = "<ul>";
 	areaViolations.forEach(function(entry) {
-	    out += "<li>Taxi " + entry + "</li>";
+		if(!ignore_taxi(entry))
+	    	out += "<li>Taxi " + entry + "</li>";
 	});
 	document.getElementById("areaViolations").innerHTML = out+"</ul>";
 }
- 
+
+function ignore_taxi(id){
+	var index = ignore.indexOf(id);
+	if(index == -1)
+		return false;
+	return true;
+}
+
+function taxi_set_ignore(id, ign){
+	if(ign){
+		if(ignore.indexOf(id) != -1)
+			return;
+		ignore.push(id);
+	}
+	else{
+		var index = ignore.indexOf(id);
+		if(index == -1)
+			return;
+		ignore.splice(index, 1);
+	}
+	areaViolations_draw();
+}
+
 function areaViolations_remove(id){
-	var index = areaViolations.indexOf(item);
+	var index = areaViolations.indexOf(id);
 	if(index == -1)
 		return;
 	areaViolations.splice(index, 1);
-
-	var out = "<ul>"; 
-	areaViolations.forEach(function(entry) {
-	    out += "<li>Taxi " + entry + "</li>";
-	});
-	document.getElementById("areaViolations").innerHTML = out+"</ul>";
+	areaViolations_draw();
 } 
   
 function initMap() {
@@ -166,11 +213,6 @@ function initMap() {
   });
   initWebsocketClient();
 }
-
-
-
-
-
 
 </script>
 <script async defer

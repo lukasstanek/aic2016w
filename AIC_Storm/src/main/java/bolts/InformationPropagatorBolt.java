@@ -57,9 +57,9 @@ public class InformationPropagatorBolt extends AbstractRedisBolt {
             // propagate number of driving taxis and total distance every 5 sec
             if(System.currentTimeMillis() - lastPropagation > 5000){
 
-                int currentNumberOfDrivingTaxis = getNumberOfDrivingTaxis(activeTaxisSring, 0.001);
+                int currentNumberOfDrivingTaxis = getNumberOfDrivingTaxis(activeTaxisSring, 0.01);
                 // TODO recheck this
-                //jedisCommands.del("dpb-active-taxis");
+                jedisCommands.del(ACTIVE_TAXIS_TAG_DISTANCE_PROPAGATOR_BOLT);
 
                 jedisCommands.set(LAST_PROPAGATION_TAG_DISTANCE_PROPAGATOR_BOLT, String.valueOf(System.currentTimeMillis()));
                 collector.emit("TaxiTotal", new Values("Stats", "TaxiTotal", currentNumberOfDrivingTaxis));
