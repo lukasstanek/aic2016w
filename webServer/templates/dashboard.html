@@ -91,12 +91,12 @@ function initWebsocketClient(){
 					if(fields[2] == "<10")
 						areaViolations_remove(fields[0]);
 					if(fields[2] == ">15"){
-{#						marker_set_visible(fields[0], false);#}
+						marker_set_visible(fields[0], false);
 						console_output("Taxi "+fields[0]+" left area");
 						taxi_set_ignore(fields[0], true);
 					}
 					if(fields[2] == "<15"){
-{#						marker_set_visible(fields[0], true);#}
+						marker_set_visible(fields[0], true);
 						console_output("Taxi "+fields[0]+" entered area");
 						taxi_set_ignore(fields[0], false);
 					}

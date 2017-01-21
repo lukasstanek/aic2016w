@@ -12,9 +12,9 @@ from confluent_kafka import Producer
 
 
 datapoints = []
-path = '../data/06/'
-filename = '220.txt'
-# filename = '06.sorted.txt'
+path = '../data/'
+#filename = '220.txt'
+filename = '06.sorted.txt'
 
 def writeListToFile(datapoints):
     out = open(join('../data/06.sorted.txt'), 'w')
