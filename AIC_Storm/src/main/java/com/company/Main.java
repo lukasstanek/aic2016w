@@ -91,9 +91,10 @@ public class Main {
                     }
 
                     public Object getMessageFromTuple(Tuple tuple) {
-                        return tuple.getStringByField("id") + ","
-                                + tuple.getStringByField("type")
-                                + "," + tuple.getValueByField("value").toString();
+                        String id = tuple.getStringByField("id");
+                        String type = tuple.getStringByField("type");
+                        String value = tuple.getValueByField("value").toString();
+                        return id+","+type+","+value;
                     }
                 });
 

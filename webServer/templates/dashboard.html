@@ -79,9 +79,9 @@ function initWebsocketClient(){
 
 		try{
   			//var obj = JSON.parse(str.substr(2,str.length-3));
-  			var fields = str.split(",");
+  			var fields = str.substr(2,str.length-3).split(",");
 
-			/*switch(fields[1]){
+			switch(fields[1]){
 				case 'NotifyOutofBounds':
 					if(fields[2] == ">10")
 						areaViolations_add(fields[0]);
@@ -102,7 +102,7 @@ function initWebsocketClient(){
 				case 'LocationBolt':
 					updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
 				break;
-			}*/
+			}
 
 			//updateTaxiLocation(obj.id, parseFloat(obj.latitude), parseFloat(obj.longitude));
 		}
@@ -122,7 +122,7 @@ function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
 
-function updateTaxiLocation(id, lati, longi){
+function updateTaxiLocation(id, longi, lati){
 	if (typeof taxis['taxi'+id] !== 'undefined') 
 		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
 	else
