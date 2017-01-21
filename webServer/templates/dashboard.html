@@ -91,18 +91,18 @@ function initWebsocketClient(){
 					if(fields[2] == "<10")
 						areaViolations_remove(fields[0]);
 					if(fields[2] == ">15"){
-						marker_set_visible(fields[0], false);
+{#						marker_set_visible(fields[0], false);#}
 						console_output("Taxi "+fields[0]+" left area");
 						taxi_set_ignore(fields[0], true);
 					}
 					if(fields[2] == "<15"){
-						marker_set_visible(fields[0], true);
+{#						marker_set_visible(fields[0], true);#}
 						console_output("Taxi "+fields[0]+" entered area");
 						taxi_set_ignore(fields[0], false);
 					}
 				break;
 				case 'NotifySpeedingBolt':
-					console_output("Taxi "+fields[0]+" is speeding");
+					console_output("Taxi "+fields[0] + ": " + fields[2]);
 				break;
 				case 'TaxiTotal':
 					updateCurrentNumTaxisDriving(fields[2]);
@@ -111,6 +111,7 @@ function initWebsocketClient(){
 					updateOverallDistance(fields[2]);
 				break;
 				case 'LocationBolt':
+				    console.log(fields[0] + ': new Location ' + parseFloat(fields[2]) + ' ' +  parseFloat(fields[3]));
 					updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
 				break;
 			}
@@ -134,7 +135,8 @@ function marker_set_visible(id, visible){
 		taxis['taxi'+id] = new google.maps.Marker({
         	position: {lat: 1, lng: 1},
         	map: googleMap,
-        	title: 'taxi'+id
+        	title: 'taxi'+id,
+            label: id
 		});
 	taxis['taxi'+id].setVisible(visible);
 }
@@ -147,14 +149,15 @@ function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
 
-function updateTaxiLocation(id, longi, lati){
+function updateTaxiLocation(id, lati, longi){
 	if (typeof taxis['taxi'+id] !== 'undefined') 
 		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
 	else
 		taxis['taxi'+id] = new google.maps.Marker({
         	position: {lat: lati, lng: longi},
         	map: googleMap,
-        	title: 'taxi'+id
+        	title: 'taxi'+id,
+            label: id
 		});
 }  
 
@@ -211,6 +214,28 @@ function initMap() {
     zoom: 11,
     center: myLatLng
   });
+
+    var cityCircle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 15000
+    });
+
+    cityCircle = new google.maps.Circle({
+        strokeColor: '#0000FF',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 10000
+    });
   initWebsocketClient();
 }
 

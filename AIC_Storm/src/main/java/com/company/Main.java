@@ -35,7 +35,7 @@ public class Main {
         config.setNumWorkers(1);
 
         //zookeeper brokerhost
-        BrokerHosts host = new ZkHosts("172.17.0.1:2181");
+        BrokerHosts host = new ZkHosts("localhost:2181");
         //kafka config
         SpoutConfig spoutConfig = new SpoutConfig(host,DATASOURCE,"/taxilocs", UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
@@ -43,7 +43,7 @@ public class Main {
         //kafka spout
         KafkaSpout spout = new KafkaSpout(spoutConfig);
 
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder().setHost("172.17.0.1").setPort(6379).build();
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder().setHost("localhost").setPort(6379).build();
 
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
@@ -69,7 +69,7 @@ public class Main {
         builder.setBolt(AVERAGE_SPEED_BOLT, new AverageSpeedBolt(jedisPoolConfig))
             .shuffleGrouping(CURRENT_SPEED_BOLT);
 
-        builder.setBolt(NOTIFY_SPEEDING_BOLT, new NotifySpeedingBolt())
+        builder.setBolt(NOTIFY_SPEEDING_BOLT, new NotifySpeedingBolt(jedisPoolConfig))
                 .shuffleGrouping(CURRENT_SPEED_BOLT);
 
         Properties props = new Properties();

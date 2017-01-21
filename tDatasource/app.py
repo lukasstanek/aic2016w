@@ -12,14 +12,15 @@ from confluent_kafka import Producer
 
 
 datapoints = []
-path = '../data/'
-filename = '06.sorted.txt'
+path = '../data/06/'
+filename = '220.txt'
+# filename = '06.sorted.txt'
 
 def writeListToFile(datapoints):
     out = open(join('../data/06.sorted.txt'), 'w')
 
     for item in datapoints:
-        out.write("%s,%s,%s,%s\n" % (item.id,  item.timeAsDate, item.latitude,  item.longitude))
+        out.write("%s,%s,%s,%s\n" % (item.id,  item.timeAsDate, item.longitude,  item.latitude))
 
     out.close()
 
