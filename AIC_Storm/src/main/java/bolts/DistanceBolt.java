@@ -8,7 +8,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import redis.clients.jedis.JedisCommands;
-import util.Haversine;
+import util.Util;
 
 import java.util.HashMap;
 
@@ -46,7 +46,7 @@ public class DistanceBolt extends AbstractRedisBolt {
                 double oldLatitude = Double.parseDouble(jedisCommands.get(LATITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id));
                 currentDistance = Double.parseDouble(distanceString);
 
-                distance = Haversine.calculate(oldLongitude, oldLatitude, longitude, latitude);
+                distance = Util.Haversine(oldLongitude, oldLatitude, longitude, latitude);
 
 
             }else{
@@ -54,7 +54,7 @@ public class DistanceBolt extends AbstractRedisBolt {
             }
 
             jedisCommands.set(DISTANCE_TAG_DISTANCE_CALCULATOR_BOLT+id, (distance+currentDistance)+"");
-            this.collector.emit(new Values(id, this.getClass().getSimpleName(), distance));
+            this.collector.emit(new Values(id, this.getClass().getSimpleName(), Util.round(distance, 2)));
 
             jedisCommands.set(LONGITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id, longitude+"");
             jedisCommands.set(LATITUDE_TAG_DISTANCE_CALCULATOR_BOLT+id, latitude+"");

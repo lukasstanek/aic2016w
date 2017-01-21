@@ -10,6 +10,7 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
+import util.Util;
 
 import java.util.HashMap;
 
@@ -63,7 +64,7 @@ public class InformationPropagatorBolt extends AbstractRedisBolt {
 
                 jedisCommands.set(LAST_PROPAGATION_TAG_DISTANCE_PROPAGATOR_BOLT, String.valueOf(System.currentTimeMillis()));
                 collector.emit("TaxiTotal", new Values("Stats", "TaxiTotal", currentNumberOfDrivingTaxis));
-                collector.emit("DistanceTotal", new Values("Stats", "DistanceTotal", distance + tuple.getDouble(2)));
+                collector.emit("DistanceTotal", new Values("Stats", "DistanceTotal", Util.round(distance + tuple.getDouble(2), 2)));
                 System.out.println("G4T1Distance: Current Taxis driving: " + currentNumberOfDrivingTaxis);
                 System.out.println("G4T1Distance: Total Distance: "+(distance + tuple.getDouble(2)));
             }

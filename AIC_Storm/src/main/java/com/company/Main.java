@@ -6,6 +6,9 @@ package com.company;
 import bolts.*;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.generated.AlreadyAliveException;
+import org.apache.storm.generated.AuthorizationException;
+import org.apache.storm.generated.InvalidTopologyException;
 import org.apache.storm.generated.StormTopology;
 import org.apache.storm.kafka.*;
 import org.apache.storm.kafka.bolt.KafkaBolt;
@@ -15,7 +18,7 @@ import org.apache.storm.redis.common.config.JedisPoolConfig;
 import org.apache.storm.spout.SchemeAsMultiScheme;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Tuple;
-import util.Haversine;
+import util.Util;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -23,27 +26,54 @@ import java.util.UUID;
 import static util.Constants.*;
 
 public class Main {
+    public static String ZOOKEEPER_HOST = "localhost";
+    public static String ZOOKEEPER_PORT = "2181";
+    public static String KAFKA_HOST = "localhost";
+    public static String KAFKA_PORT = "9092";
+    public static String REDIS_HOST = "localhost";
+    public static int REDIS_PORT = 6379;
 
 
+    public static void main(String[] args) throws InvalidTopologyException, AuthorizationException, AlreadyAliveException {
 
-    public static void main(String[] args) {
-        LocalCluster cluster = new LocalCluster();
+        if(args.length > 0){
+            ZOOKEEPER_HOST = args[0];
+        }
+        if(args.length > 1){
+            ZOOKEEPER_PORT = args[1];
+        }
+        if(args.length > 2){
+            KAFKA_HOST = args[2];
+        }
+        if(args.length > 3){
+            KAFKA_PORT = args[3];
+        }
+        if(args.length > 4){
+            REDIS_HOST = args[4];
+        }
+        if(args.length > 5){
+            REDIS_PORT = Integer.parseInt(args[5]);
+        }
+
+        LocalCluster localCluster = new LocalCluster();
+
 
         //config
-        Config config = new Config();
-        config.setDebug(true);
-        config.setNumWorkers(1);
+        Config clusterConfig = new Config();
+        clusterConfig.setDebug(true);
+        clusterConfig.setNumWorkers(1);
 
         //zookeeper brokerhost
-        BrokerHosts host = new ZkHosts("localhost:2181");
+        BrokerHosts brokerHost = new ZkHosts(ZOOKEEPER_HOST + ":" + ZOOKEEPER_PORT);
+
         //kafka config
-        SpoutConfig spoutConfig = new SpoutConfig(host,DATASOURCE,"/taxilocs", UUID.randomUUID().toString());
+        SpoutConfig spoutConfig = new SpoutConfig(brokerHost,DATASOURCE,"/taxilocs", UUID.randomUUID().toString());
         spoutConfig.scheme = new SchemeAsMultiScheme(new StringScheme());
 
         //kafka spout
         KafkaSpout spout = new KafkaSpout(spoutConfig);
 
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder().setHost("localhost").setPort(6379).build();
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig.Builder().setHost(REDIS_HOST).setPort(REDIS_PORT).build();
 
         //create our topology
         TopologyBuilder builder = new TopologyBuilder();
@@ -72,14 +102,14 @@ public class Main {
         builder.setBolt(NOTIFY_SPEEDING_BOLT, new NotifySpeedingBolt(jedisPoolConfig))
                 .shuffleGrouping(CURRENT_SPEED_BOLT);
 
-        Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
-        props.put("acks", "1");
-        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        Properties kafkaProps = new Properties();
+        kafkaProps.put("bootstrap.servers", KAFKA_HOST + ":" + KAFKA_PORT);
+        kafkaProps.put("acks", "1");
+        kafkaProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        kafkaProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         KafkaBolt kafkaBolt = new KafkaBolt()
-                .withProducerProperties(props)
+                .withProducerProperties(kafkaProps)
                 .withTopicSelector(new KafkaTopicSelector() {
                     public String getTopic(Tuple tuple) {
                         return KAFKA_OUTPUT;
@@ -108,8 +138,9 @@ public class Main {
 
 
         StormTopology topology = builder.createTopology();
-        cluster.submitTopology(TOPOLOGY,config,topology);
-        //cluster.shutdown();
+        localCluster.submitTopology(TOPOLOGY,clusterConfig,topology);
+//        StormSubmitter.submitTopology(TOPOLOGY, clusterConfig, topology);
+        //localCluster.shutdown();
     }
 
     public static void testHaversine(String[] args){
@@ -119,6 +150,6 @@ public class Main {
         double lat2 = 39.913785;
         double long2 = 116.397681;
 
-        System.out.println("distance: " + Haversine.calculate(lat,long1,lat2,long2));
+        System.out.println("distance: " + Util.Haversine(lat,long1,lat2,long2));
     }
 }

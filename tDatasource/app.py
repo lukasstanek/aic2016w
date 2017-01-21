@@ -9,15 +9,16 @@ import sys
 
 from TaxiLocation import TaxiLocation
 from confluent_kafka import Producer
+import argparse
 
 
 datapoints = []
-path = '../data/'
+datapath = '../data/'
 #filename = '220.txt'
-filename = '06.sorted.txt'
+# filename = '06.sorted.txt'
 
 def writeListToFile(datapoints):
-    out = open(join('../data/06.sorted.txt'), 'w')
+    out = open(join('../data/' + args.importpath + '.sorted.txt'), 'w')
 
     for item in datapoints:
         out.write("%s,%s,%s,%s\n" % (item.id,  item.timeAsDate, item.longitude,  item.latitude))
@@ -25,10 +26,10 @@ def writeListToFile(datapoints):
     out.close()
 
 def unifyInputs():
-    for file in os.listdir(path + '06/'):
-        if isfile(join(path + '06/', file)):
+    for file in os.listdir(datapath + args.importpath + '/'):
+        if isfile(join(datapath + args.importpath + '/', file)):
             print('reading file: ' + file)
-            with open(join(path + '06/', file), 'r') as filehandle:
+            with open(join(datapath + args.importpath + '/', file), 'r') as filehandle:
                 for line in filehandle:
                     datapoints.append(TaxiLocation(line))
     datapoints.sort(key=lambda x: x.timestamp, reverse=False)
@@ -44,7 +45,7 @@ def send_data_continously(filehandle):
         p.produce('taxilocs', location.json())
         p.flush()
 
-        sleep(1*speed)
+        sleep(1*args.speed)
 
 def send_data_realtime(filehandle):
     firstLine = True
@@ -59,7 +60,7 @@ def send_data_realtime(filehandle):
             firstLine = False
         while location.timestamp > currentTime:
             currentTime += 1
-            sleep(1*speed)
+            sleep(1*args.speed)
             print('current time: ' + str(currentTime))
 
         print('emitting: ' + location.json())
@@ -68,24 +69,29 @@ def send_data_realtime(filehandle):
         p.flush()
 
 def send_data():
-    print('reading file: ' + filename)
-    with open(join(path, filename), 'r') as filehandle:
-        if mode == 'realtime':
+    print('reading file: ' + args.filename)
+    with open(join(datapath, args.filename), 'r') as filehandle:
+        if args.mode == 'realtime':
             send_data_realtime(filehandle)
-        elif mode == 'continous':
+        elif args.mode == 'continuous':
             send_data_continously(filehandle)
 
 
-speed = 1
-mode = 'realtime'
 
-if len(sys.argv) > 1:
-    mode = sys.argv[1]
+parser = argparse.ArgumentParser()
+parser.add_argument("-f", "--filename", type=str, help="specify filename for reading data from", default="06.sorted.txt")
+parser.add_argument("-m", "--mode", type=str, help="specifies the mode the data should be emitted, in realtime or continuous", default="realtime")
+parser.add_argument("-s", "--speed", type=float, help="specifies how long 1 second will be within the program", default=1)
+parser.add_argument("-u", "--unify", help="activates unification mode", action="store_true")
+parser.add_argument("-ip", "--importpath", help="folder which contains files to be merged", default="06q")
+args = parser.parse_args()
 
-if len(sys.argv) > 2:
-    speed = float(sys.argv[2])
+print("Program is now in " + args.mode + " mode")
+print("Speed set to " + str(args.speed) + " seconds")
+print("Filename is " + args.filename)
+print("Is in unification mode " + str(args.unify))
 
-if mode == 'unify':
+if args.unify:
     print('unifying the folder')
     unifyInputs()
 else:

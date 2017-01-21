@@ -2,10 +2,6 @@ package bolts;
 
 import org.apache.storm.redis.bolt.AbstractRedisBolt;
 import org.apache.storm.redis.common.config.JedisPoolConfig;
-import org.apache.storm.shade.org.eclipse.jetty.util.ajax.JSON;
-import org.apache.storm.task.OutputCollector;
-import org.apache.storm.task.TopologyContext;
-import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
@@ -13,12 +9,9 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
-import util.Haversine;
-import java.util.HashMap;
+
 import java.util.Map;
 
-import static jdk.nashorn.internal.runtime.regexp.joni.Config.log;
-import static util.Constants.OUT_OF_BOUNDS_NOTIFY_OOB_BOLT;
 import static util.Constants.SPEEDING_NOTIFY_SPEEDING_BOLT;
 
 

@@ -10,7 +10,7 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
-import util.Haversine;
+import util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class NotifyOutofBoundsBolt extends AbstractRedisBolt {
         double taxiLat = Double.parseDouble(map.get("latitude"));
         double taxiLon = Double.parseDouble(map.get("longitude"));
 
-        double distance = Haversine.calculate(centerLat, centerLon, taxiLat, taxiLon);
+        double distance = Util.Haversine(centerLat, centerLon, taxiLat, taxiLon);
         if(distance > 10){
             if(isOutofBounds == null){
                 System.out.println("G4T1Bounds: Taxi out of bounds #" + taxiId);
