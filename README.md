@@ -23,7 +23,11 @@ You will need docker and docker-compose, after that just run docker-compose up (
 * kafka/zookeeper
 * tDatasource
 * aic_storm
-
+* webserver
+* dashboard
 
 ## webserver
-* simply execute 'python3 app.py' to activate the server 
+* simply execute 'python3 app.py' to activate the server
+
+## dashboard
+* simply browse to 'localhost:5000' to view the dashboard

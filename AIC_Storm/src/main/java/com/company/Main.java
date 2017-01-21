@@ -99,12 +99,9 @@ public class Main {
                 });
 
         builder.setBolt(OUTPUT_BOLT, kafkaBolt)
-                .shuffleGrouping(CURRENT_SPEED_BOLT)
-                .shuffleGrouping(AVERAGE_SPEED_BOLT)
                 .shuffleGrouping(NOTIFY_OOB_BOLT)
                 .shuffleGrouping(LOCATION_BOLT)
                 .shuffleGrouping(NOTIFY_SPEEDING_BOLT)
-                .shuffleGrouping(DISTANCE_BOLT)
                 .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "TaxiTotal")
                 .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "DistanceTotal");
 
