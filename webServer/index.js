@@ -37,6 +37,8 @@ class KafkaSocketServer{
 				console.log(`client ${index} disconnected`)
 				this.ws.splice(index, 1)
 			})
+
+			this.initializeConnection();
 		})
 		
 	}
@@ -53,6 +55,13 @@ class KafkaSocketServer{
 		this.consumer.on('message', (message) => {
 			this.processOutput(message);
 		});
+	}
+
+	initializeConnection(){
+		var taxis = this.taxis.find();
+		taxis.forEach((taxi) => {
+			this.broadcast(JSON.stringify(taxi));
+		})
 	}
 
 	
