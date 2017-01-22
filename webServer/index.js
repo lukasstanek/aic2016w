@@ -107,8 +107,8 @@ class KafkaSocketServer{
 			})
 			taxi = this.taxis.findOne({id:id});
 		}else{
-			taxi.longi = longi;
-			taxi.lati = lati;
+			taxi.longi = lati;
+			taxi.lati = longi;
 			this.taxis.update(taxi);
 		}
 		this.broadcast(JSON.stringify(taxi));	

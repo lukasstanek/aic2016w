@@ -75,13 +75,13 @@ var areaViolations = [];
 
 function initWebsocketClient(){
 
-    var WebSocket = require('ws');
     var ws = new WebSocket('ws://localhost:8080');
 
 
 
-    ws.on('message', function(data, flags) {
-		var dataObj = JSON.parse(data);
+    ws.onmessage = function(data, flags) {
+		console.log(data)
+		var dataObj = JSON.parse(data.data);
 
 
         try{
@@ -98,17 +98,18 @@ function initWebsocketClient(){
                     updateOverallDistance(dataObj.distance);
                     break;
                 case 'location':
-                    console.log(fields[0] + ': new Location ' + parseFloat(fields[2]) + ' ' +  parseFloat(fields[3]));
-                    updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
+                    console.log(dataObj.id + ': new Location ' + parseFloat(dataObj.lati) + ' ' +  parseFloat(dataObj.longi));
+                    updateTaxiLocation(dataObj.id, parseFloat(dataObj.lati), parseFloat(dataObj.longi));
                     break;
             }
 
         }
         catch(err){
-            console.log("error with: "+str);
+            console.log("error with: "+err);
         }
-    };
 
+
+	}
 }
 
 function console_output(val){
