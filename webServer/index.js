@@ -67,6 +67,7 @@ class KafkaSocketServer{
 	
 	processOutput(message){
 		var fields = message.value.split(",");
+		console.log(message);
 		switch(fields[1]){
 			case "NotifyOutofBoundsBolt":
 				if(fields[2] === ">10"){
@@ -88,6 +89,9 @@ class KafkaSocketServer{
 			case 'TaxiTotal':
 				this.updateCurrentNumTaxisDriving(fields[2]);
 			break;
+            case 'TaxiOverall':
+                this.updateOverallTaxis(fields[2]);
+                break;
 			case 'DistanceTotal':
 				this.updateOverallDistance(fields[2]);
 			break;
@@ -105,7 +109,7 @@ class KafkaSocketServer{
 		});
 	}
 		
-	updateTaxiLocation(id, longi, lati){
+	updateTaxiLocation(id, lati, longi){
 		var taxi = this.taxis.findOne({id: id});
 		if(!taxi){
 			this.taxis.insert({
@@ -113,11 +117,11 @@ class KafkaSocketServer{
 				longi: longi,
 				lati: lati,
 				type: 'location'
-			})
+			});
 			taxi = this.taxis.findOne({id:id});
 		}else{
-			taxi.longi = lati;
-			taxi.lati = longi;
+			taxi.longi = longi;
+			taxi.lati = lati;
 			this.taxis.update(taxi);
 		}
 		this.broadcast(JSON.stringify(taxi));	
@@ -161,8 +165,31 @@ class KafkaSocketServer{
         }
 	}
 
+    updateOverallTaxis(val) {
+        this.broadcast(JSON.stringify({total: val, type: 'overall'}));
+    }
 }
 
 
 var server = new KafkaSocketServer();
 server.listen();
+
+
+// Serving dashboard
+
+var static = require( 'node-static' ),
+    port = 5000,
+    http = require( 'http' );
+
+// config
+var file = new static.Server( './webServer/templates', {
+    cache: 3600,
+    gzip: true
+} );
+
+// serve
+http.createServer( function ( request, response ) {
+    request.addListener( 'end', function () {
+        file.serve( request, response );
+    } ).resume();
+} ).listen( port );

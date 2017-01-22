@@ -31,5 +31,6 @@ public class Constants {
     public static final String OUT_OF_BOUNDS_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_";
     public static final String OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_15";
     public static final String SPEEDING_NOTIFY_SPEEDING_BOLT = "SPEEDING";
+    public static final String TAXIS_TOTAL_DISTANCE_PROP_BOLT = "DPB_TAXIS_TOTAL";
 
 }

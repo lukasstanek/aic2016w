@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Taxi Monitoring Dashboard</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+		font-family: arial;
+      }
+      #map {
+        height: 60%;
+		width: 80%;
+		margin: 0 auto;
+      }
+	  .divBox{
+	  	float: left; 
+		width: 33%;
+	  }
+
+    </style>
+  </head>
+  <body>
+	  
+	<h1 style="margin-left: 20px;">Taxi Monitoring Dashboard</h1>
+	<span id="currenttime"></span>
+    <div id="map"></div>
+	<div style="width: 80%; margin: 0 auto;">
+		<div id="test" class="divBox">
+			<div style="padding: 10px;" >
+				Taxis total
+				<br />
+				<br />
+				<span id="overallTaxis"></span>
+				<br />
+				<br />
+				Taxis currently in motion
+				<br />
+				<br />
+				<span id="currtentTaxisDriving"></span>
+				<br />
+				<br />
+				Overall Distance of all Taxis
+				<br />
+				<br />
+				<span id="overallDistance"></span>
+			</div>
+		</div>
+		<div class="divBox">
+			<div style="padding: 10px;">
+				Area violations
+				<br />
+				<br />
+				<div id="areaViolations" style="background-color: #f2f2f2; height: 200px; width: 80%; overflow: auto;"></div>
+
+			</div>
+		</div>
+		<div class="divBox">
+			<div style="padding: 10px;">
+				Console
+				<br />
+				<br />
+				<div style="background-color: #f2f2f2; height: 200px; overflow: auto;">
+					<ul id="console"></ul>
+				</div>
+			</div>
+		</div>
+		<div style="clear: left;"></div>
+	</div>
+	
+	
+<script>
+var googleMap;
+var taxis = [];
+var ignore = [];
+var areaViolations = [];
+var oob = [];
+
+
+function initWebsocketClient(){
+
+    var ws = new WebSocket('ws://localhost:8080');
+
+
+
+    ws.onmessage = function(data, flags) {
+		console.log(data)
+		var dataObj = JSON.parse(data.data);
+
+
+        try{
+            var type = dataObj.type;
+
+            switch(type){
+                case 'message':
+                    console_output(dataObj.msg);
+                    break;
+                case 'total':
+                    updateCurrentNumTaxisDriving(dataObj.total);
+                    break;
+                case 'overall':
+                    updateOverallTaxis(dataObj.total);
+                    break;
+                case 'distance':
+                    updateOverallDistance(dataObj.distance);
+                    break;
+                case 'location':
+                	if(dataObj.oob)
+                		dataObj.oob ? oob_add(dataObj.id) : oob_remove(dataObj.id);
+                    if(dataObj.areaViolation)
+                		dataObj.areaViolation ? areaViolations_add(dataObj.id) : areaViolations_remove(dataObj.id);
+
+                    console.log(dataObj.id + ': new Location ' + parseFloat(dataObj.lati) + ' ' +  parseFloat(dataObj.longi));
+                    updateTaxiLocation(dataObj.id, parseFloat(dataObj.lati), parseFloat(dataObj.longi));
+                    break;
+            }
+
+        }
+        catch(err){
+            console.log("error with: "+err);
+        }
+
+
+	}
+}
+
+function console_output(val){
+	var li = document.createElement("li");
+	li.innerHTML = new Date().toLocaleTimeString() +": "+ val;
+	document.getElementById("console").insertBefore(
+		li, document.getElementById("console").firstChild);
+}
+
+function marker_set_visible(id, visible){
+	if (typeof taxis['taxi'+id] === 'undefined')
+		taxis['taxi'+id] = new google.maps.Marker({
+        	position: {lat: 1, lng: 1},
+        	map: googleMap,
+        	title: 'taxi'+id,
+            label: id
+		});
+	taxis['taxi'+id].setVisible(visible);
+}
+
+function updateCurrentNumTaxisDriving(val){
+	document.getElementById("currtentTaxisDriving").innerHTML = val;
+}
+
+function updateOverallTaxis(val){
+    document.getElementById("overallTaxis").innerHTML = val;
+}
+function updateOverallDistance(val){
+	document.getElementById("overallDistance").innerHTML = val;
+}
+
+function updateTaxiLocation(id, lati, longi){
+	if (typeof taxis['taxi'+id] !== 'undefined') 
+		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
+	else
+		taxis['taxi'+id] = new google.maps.Marker({
+        	position: {lat: lati, lng: longi},
+        	map: googleMap,
+        	title: 'taxi'+id,
+            label: id
+		});
+}  
+
+function areaViolations_add(id){
+	if(areaViolations.indexOf(id) != -1)
+		return;
+	areaViolations.push(id);
+	areaViolations_draw();
+}
+
+function oob_add(id){
+	if(oob.indexOf(id) != -1)
+		return;
+	oob.push(id);
+	console_output("Taxi "+id+" left area");
+	marker_set_visible(id, false);
+}
+
+function areaViolations_draw(){
+	var out = "<ul>";
+	areaViolations.forEach(function(entry) {
+		if(!ignore_taxi(entry))
+	    	out += "<li>Taxi " + entry + "</li>";
+	});
+	document.getElementById("areaViolations").innerHTML = out+"</ul>";
+}
+
+function ignore_taxi(id){
+	var index = ignore.indexOf(id);
+	if(index == -1)
+		return false;
+	return true;
+}
+
+function taxi_set_ignore(id, ign){
+	if(ign){
+		if(ignore.indexOf(id) != -1)
+			return;
+		ignore.push(id);
+	}
+	else{
+		var index = ignore.indexOf(id);
+		if(index == -1)
+			return;
+		ignore.splice(index, 1);
+	}
+	areaViolations_draw();
+}
+
+function areaViolations_remove(id){
+	var index = areaViolations.indexOf(id);
+	if(index == -1)
+		return;
+	areaViolations.splice(index, 1);
+	areaViolations_draw();
+}
+
+function oob_remove(id){
+	var index = oob.indexOf(id);
+	if(index == -1)
+		return;
+	oob.splice(index, 1);
+	console_output("Taxi "+id+" entered area");
+	marker_set_visible(id, true);
+}
+  
+function initMap() {
+  var myLatLng = {lat: 39.9164462, lng: 116.3956914};
+
+  googleMap = new google.maps.Map(document.getElementById('map'), {
+    zoom: 11,
+    center: myLatLng
+  });
+
+    var cityCircle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 15000
+    });
+
+    cityCircle = new google.maps.Circle({
+        strokeColor: '#0000FF',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 10000
+    });
+  initWebsocketClient();
+}
+
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIozUAhE4uCPm80ZVKUIM9frXC28y7ijY&signed_in=true&callback=initMap"></script>
+  </body>
+</html>

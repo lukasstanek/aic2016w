@@ -13,12 +13,12 @@ import argparse
 
 
 datapoints = []
-datapath = '../data/'
+datapath = 'data/'
 #filename = '220.txt'
 # filename = '06.sorted.txt'
 
 def writeListToFile(datapoints):
-    out = open(join('../data/' + args.importpath + '.sorted.txt'), 'w')
+    out = open(join('data/' + args.importpath + '.sorted.txt'), 'w')
 
     for item in datapoints:
         out.write("%s,%s,%s,%s\n" % (item.id,  item.timeAsDate, item.longitude,  item.latitude))
