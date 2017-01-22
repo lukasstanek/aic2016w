@@ -138,6 +138,12 @@ class KafkaSocketServer{
 			this.taxis.update(taxi);
 		    this.broadcast(JSON.stringify(taxi));
 		}
+		else{
+		    this.updateTaxiLocation(id, 1, 1);
+		    var taxi = this.taxis.findOne({id: id});
+		    taxi.areaViolation = isViolating;
+		    this.taxis.update(taxi);
+		}
 	}
 
 	updateTaxiOutOfBounds(id, isOOB){
@@ -147,6 +153,12 @@ class KafkaSocketServer{
 		    this.taxis.update(taxi);
 		    this.broadcast(JSON.stringify(taxi));
 		}
+		else{
+            this.updateTaxiLocation(id, 1, 1);
+        	var taxi = this.taxis.findOne({id: id});
+        	taxi.oob = isOOB;
+        	this.taxis.update(taxi);
+        }
 	}
 
 }
