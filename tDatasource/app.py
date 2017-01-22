@@ -82,7 +82,7 @@ parser.add_argument("-f", "--filename", type=str, help="specify filename for rea
 parser.add_argument("-m", "--mode", type=str, help="specifies the mode the data should be emitted, in realtime or continuous", default="realtime")
 parser.add_argument("-s", "--speed", type=float, help="specifies how long 1 second will be within the program", default=1)
 parser.add_argument("-u", "--unify", help="activates unification mode", action="store_true")
-parser.add_argument("-ip", "--importpath", help="folder which contains files to be merged", default="06q")
+parser.add_argument("-ip", "--importpath", help="folder which contains files to be merged", default="06")
 args = parser.parse_args()
 
 print("Program is now in " + args.mode + " mode")

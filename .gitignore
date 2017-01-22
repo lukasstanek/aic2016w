@@ -4,4 +4,8 @@ data/*
 /G4T1.iml
 aic.iml
 venv/
+<<<<<<< HEAD
 webServer/node_modules/*
+=======
+/webServer/webServer.iml
+>>>>>>> 6ddebbb8b4d2ad507afe0fb42ec673fa8f5f8d1d

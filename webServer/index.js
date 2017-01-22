@@ -1,9 +1,9 @@
-var kafka = require('kafka-node')
+var kafka = require('kafka-node');
 var Consumer = kafka.Consumer;
 var Offset = kafka.Offset;
 var Client = kafka.Client;
 var WebSocket = require('ws');
-var loki = require('lokijs')
+var loki = require('lokijs');
 
 
 class KafkaSocketServer{
@@ -25,9 +25,9 @@ class KafkaSocketServer{
 	
 	
 	listen(){
-		this.connectToKafka()
+		this.connectToKafka();
 		
-		this.WebSocketServer = WebSocket.Server
+		this.WebSocketServer = WebSocket.Server;
 		this.wss = new this.WebSocketServer({port: 8080, perMessageDeflate: false});
 		console.log('listening on web socket');
 
@@ -61,20 +61,20 @@ class KafkaSocketServer{
 		switch(fields[1]){
 			case "NotifyOutOfBoundsBolt":
 				if(fields[2] === ">10"){
-				//	this.areaViolations_add(fields[0]);
+					this.updateTaxiAreaViolation(fields[0], true);
 				}
 				if(fields[2] === "<10"){
-				//	this.areaViolations_remove(fields[0]);
+					this.updateTaxiAreaViolation(fields[0], false);
 				}
 				if(fields[2] === ">15"){
-				//	this.taxi_set_ignore(fields[0], true);
+					this.updateTaxiOutOfBounds(fields[0], true);
 				}
 				if(fields[2] === "<15"){
-				//	this.taxi_set_ignore(fields[0], false);
+					this.updateTaxiOutOfBounds(fields[0], false);
 				}
 			break;
 			case 'NotifySpeedingBolt':
-				//this.console_output("Taxi "+fields[0]+" is speeding");
+				this.broadcast(JSON.stringify({ id: fields[0], type:'message' ,msg: fields[2]}));
 			break;
 			case 'TaxiTotal':
 				this.updateCurrentNumTaxisDriving(fields[2]);
@@ -93,16 +93,17 @@ class KafkaSocketServer{
 	broadcast(message){
 		this.ws.forEach((client) => {
 			client.send(message.toString());
-		})
+		});
 	}
 		
 	updateTaxiLocation(id, longi, lati){
-		var taxi = this.taxis.findOne({id: id})
+		var taxi = this.taxis.findOne({id: id});
 		if(!taxi){
 			this.taxis.insert({
 				id: id,
 				longi: longi,
-				lati: lati
+				lati: lati,
+				type: 'location'
 			})
 			taxi = this.taxis.findOne({id:id});
 		}else{
@@ -110,7 +111,6 @@ class KafkaSocketServer{
 			taxi.lati = lati;
 			this.taxis.update(taxi);
 		}
-		taxi.type = 'location';
 		this.broadcast(JSON.stringify(taxi));	
 	}
 
@@ -122,8 +122,26 @@ class KafkaSocketServer{
 		this.broadcast(JSON.stringify({distance: val, type: 'distance'}));
 	}
 
+	updateTaxiAreaViolation(id, isViolating){
+		var taxi = this.taxis.findOne({id: id});
+		if(taxi){
+			taxi.areaViolation = isViolating;
+			this.taxis.update(taxi);
+		    this.broadcast(JSON.stringify(taxi));
+		}
+	}
+
+	updateTaxiOutOfBounds(id, isOOB){
+		var taxi = this.taxis.findOne({id: id});
+		if(taxi){
+		    taxi.areaViolation = isOOB;
+		    this.taxis.update(taxi);
+		    this.broadcast(JSON.stringify(taxi));
+		}
+	}
+
 }
 
 
 var server = new KafkaSocketServer();
-server.listen()
+server.listen();
