@@ -36,6 +36,21 @@ def unifyInputs():
 
     writeListToFile(datapoints)
 
+
+def cache_first_send_later(filehandle):
+    locationList = []
+    for line in filehandle:
+        locationList.append(TaxiLocation(line))
+
+    for location in locationList:
+        print('emitting: ' + location.json())
+        p = Producer({'bootstrap.servers': 'localhost'})
+        p.produce('taxilocs', location.json())
+        p.flush()
+
+        sleep(1*args.speed)
+
+
 def send_data_continously(filehandle):
     for line in filehandle:
         location = TaxiLocation(line)
@@ -74,6 +89,8 @@ def send_data():
             send_data_realtime(filehandle)
         elif args.mode == 'continuous':
             send_data_continously(filehandle)
+        elif args.mode == 'inmemory':
+            cache_first_send_later(filehandle)
 
 
 
