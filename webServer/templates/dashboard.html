@@ -71,6 +71,7 @@ var googleMap;
 var taxis = [];
 var ignore = [];
 var areaViolations = [];
+var oob = [];
 
 
 function initWebsocketClient(){
@@ -98,6 +99,11 @@ function initWebsocketClient(){
                     updateOverallDistance(dataObj.distance);
                     break;
                 case 'location':
+                	if(dataObj.oob)
+                		dataObj.oob ? oob_add(dataObj.id) : oob_remove(dataObj.id);
+                    if(dataObj.areaViolation)
+                		dataObj.areaViolation ? areaViolations_add(dataObj.id) : areaViolations_remove(dataObj.id);
+
                     console.log(dataObj.id + ': new Location ' + parseFloat(dataObj.lati) + ' ' +  parseFloat(dataObj.longi));
                     updateTaxiLocation(dataObj.id, parseFloat(dataObj.lati), parseFloat(dataObj.longi));
                     break;
@@ -157,6 +163,14 @@ function areaViolations_add(id){
 	areaViolations_draw();
 }
 
+function oob_add(id){
+	if(oob.indexOf(id) != -1)
+		return;
+	oob.push(id);
+	console_output("Taxi "+id+" left area");
+	marker_set_visible(id, false);
+}
+
 function areaViolations_draw(){
 	var out = "<ul>";
 	areaViolations.forEach(function(entry) {
@@ -194,7 +208,16 @@ function areaViolations_remove(id){
 		return;
 	areaViolations.splice(index, 1);
 	areaViolations_draw();
-} 
+}
+
+function oob_remove(id){
+	var index = oob.indexOf(id);
+	if(index == -1)
+		return;
+	oob.splice(index, 1);
+	console_output("Taxi "+id+" left area");
+	marker_set_visible(id, true);
+}
   
 function initMap() {
   var myLatLng = {lat: 39.9164462, lng: 116.3956914};

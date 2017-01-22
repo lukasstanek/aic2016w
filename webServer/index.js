@@ -68,7 +68,7 @@ class KafkaSocketServer{
 	processOutput(message){
 		var fields = message.value.split(",");
 		switch(fields[1]){
-			case "NotifyOutOfBoundsBolt":
+			case "NotifyOutofBoundsBolt":
 				if(fields[2] === ">10"){
 					this.updateTaxiAreaViolation(fields[0], true);
 				}
@@ -143,7 +143,7 @@ class KafkaSocketServer{
 	updateTaxiOutOfBounds(id, isOOB){
 		var taxi = this.taxis.findOne({id: id});
 		if(taxi){
-		    taxi.areaViolation = isOOB;
+		    taxi.oob = isOOB;
 		    this.taxis.update(taxi);
 		    this.broadcast(JSON.stringify(taxi));
 		}
