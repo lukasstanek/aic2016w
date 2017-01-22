@@ -40,7 +40,7 @@ public class LocationBolt extends AbstractRedisBolt {
             lastProgationTime = "0";
         }
 
-        if(System.currentTimeMillis()/1000L - Long.parseLong(lastProgationTime) > 5){
+        if(System.currentTimeMillis()/1000L - Long.parseLong(lastProgationTime) > 1){
 
             collector.emit(new Values(map.get("id"),
                     this.getClass().getSimpleName(),

@@ -1,11 +1,14 @@
 package util;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 /**
  * Created by lukas on 11/12/16.
  */
-public class Haversine {
+public class Util {
     public static final double R = 6372.8; // In kilometers
-    public static double calculate(double lat1, double lon1, double lat2, double lon2) {
+    public static double Haversine(double lat1, double lon1, double lat2, double lon2) {
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
         lat1 = Math.toRadians(lat1);
@@ -15,4 +18,13 @@ public class Haversine {
         double c = 2 * Math.asin(Math.sqrt(a));
         return R * c;
     }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
 }

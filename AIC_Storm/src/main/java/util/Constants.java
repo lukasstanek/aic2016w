@@ -30,5 +30,6 @@ public class Constants {
     public static final String LAST_PROPAGATION_GET_LOCATION_BOLT = "LAST_PROPAGATION_";
     public static final String OUT_OF_BOUNDS_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_";
     public static final String OUT_OF_BOUNDS_15_NOTIFY_OOB_BOLT = "OUT_OF_BOUNDS_15";
+    public static final String SPEEDING_NOTIFY_SPEEDING_BOLT = "SPEEDING";
 
 }

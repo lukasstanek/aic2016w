@@ -10,7 +10,7 @@ import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.JedisCommands;
-import util.Haversine;
+import util.Util;
 
 import java.util.HashMap;
 
@@ -46,7 +46,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
             double lastTaxtLat = Double.parseDouble(data[1]);
             double lastTaxtLon = Double.parseDouble(data[2]);
 
-            double dist = Haversine.calculate(lastTaxtLat, lastTaxtLon, currentTaxiLat, currentTaxiLon);
+            double dist = Util.Haversine(lastTaxtLat, lastTaxtLon, currentTaxiLat, currentTaxiLon);
             double timeDiff = currentTimestamp - lastTimestamp;
 
             // in case we have a time diff of 0
@@ -64,7 +64,7 @@ public class CurrentSpeedBolt extends AbstractRedisBolt {
         }
 
         log.info("Current speed for Taxi #" + taxiId + ": " + currentSpeed + " km/h");
-        collector.emit(new Values(taxiId, this.getClass().getSimpleName(),currentSpeed));
+        collector.emit(new Values(taxiId, this.getClass().getSimpleName(), Util.round(currentSpeed, 2)));
         System.out.println("G4T1CurrentSpeed: taxi: " + taxiId + " current speed: "+ currentSpeed);
 
         container.set(LAST_LOCATION_CURRENT_SPEED_BOLT+taxiId, map.get("timestamp") + "," + map.get("latitude") + "," + map.get("longitude"));

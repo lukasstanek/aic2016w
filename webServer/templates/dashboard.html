@@ -26,6 +26,7 @@
   <body>
 	  
 	<h1 style="margin-left: 20px;">Taxi Monitoring Dashboard</h1>
+	<span id="currenttime"></span>
     <div id="map"></div>
 	<div style="width: 80%; margin: 0 auto;">
 		<div id="test" class="divBox">
@@ -47,7 +48,7 @@
 				Area violations
 				<br />
 				<br />
-				<div id="areaViolations" style="background-color: #f2f2f2; height: 120px; width: 80%; overflow: auto;"></div>
+				<div id="areaViolations" style="background-color: #f2f2f2; height: 200px; width: 80%; overflow: auto;"></div>
 
 			</div>
 		</div>
@@ -56,7 +57,7 @@
 				Console
 				<br />
 				<br />
-				<div style="background-color: #f2f2f2; height: 120px; overflow: auto;">
+				<div style="background-color: #f2f2f2; height: 200px; overflow: auto;">
 					<ul id="console"></ul>
 				</div>
 			</div>
@@ -102,7 +103,7 @@ function initWebsocketClient(){
 					}
 				break;
 				case 'NotifySpeedingBolt':
-					console_output("Taxi "+fields[0]+" is speeding");
+					console_output("Taxi "+fields[0] + ": " + fields[2]);
 				break;
 				case 'TaxiTotal':
 					updateCurrentNumTaxisDriving(fields[2]);
@@ -111,6 +112,7 @@ function initWebsocketClient(){
 					updateOverallDistance(fields[2]);
 				break;
 				case 'LocationBolt':
+				    console.log(fields[0] + ': new Location ' + parseFloat(fields[2]) + ' ' +  parseFloat(fields[3]));
 					updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
 				break;
 			}
@@ -134,7 +136,8 @@ function marker_set_visible(id, visible){
 		taxis['taxi'+id] = new google.maps.Marker({
         	position: {lat: 1, lng: 1},
         	map: googleMap,
-        	title: 'taxi'+id
+        	title: 'taxi'+id,
+            label: id
 		});
 	taxis['taxi'+id].setVisible(visible);
 }
@@ -147,14 +150,15 @@ function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
 
-function updateTaxiLocation(id, longi, lati){
+function updateTaxiLocation(id, lati, longi){
 	if (typeof taxis['taxi'+id] !== 'undefined') 
 		taxis['taxi'+id].setPosition({lat: lati, lng: longi});
 	else
 		taxis['taxi'+id] = new google.maps.Marker({
         	position: {lat: lati, lng: longi},
         	map: googleMap,
-        	title: 'taxi'+id
+        	title: 'taxi'+id,
+            label: id
 		});
 }  
 
@@ -211,6 +215,28 @@ function initMap() {
     zoom: 11,
     center: myLatLng
   });
+
+    var cityCircle = new google.maps.Circle({
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 15000
+    });
+
+    cityCircle = new google.maps.Circle({
+        strokeColor: '#0000FF',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.0,
+        map: googleMap,
+        center: myLatLng,
+        radius: 10000
+    });
   initWebsocketClient();
 }
 
