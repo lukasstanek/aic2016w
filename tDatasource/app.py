@@ -39,7 +39,6 @@ def unifyInputs():
 def send_data_continously(filehandle):
     for line in filehandle:
         location = TaxiLocation(line)
-
         print('emitting: ' + location.json())
         p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())

@@ -60,7 +60,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.path.to.main.Class</mainClass>
+                            <mainClass>com.company.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

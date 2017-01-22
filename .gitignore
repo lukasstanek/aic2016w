@@ -4,3 +4,4 @@ data/*
 /G4T1.iml
 aic.iml
 venv/
+webServer/node_modules/*

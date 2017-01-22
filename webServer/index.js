@@ -19,6 +19,8 @@ class KafkaSocketServer{
 		
 		this.db = new loki('taxi.db');
 		this.taxis = this.db.addCollection('taxis');
+		this.totalDistance = 0;
+		this.totalTaxis = 0;
 	}
 	
 	
@@ -30,7 +32,11 @@ class KafkaSocketServer{
 		console.log('listening on web socket');
 
 		this.wss.on('connection', (ws) => {
-			this.ws.push(ws);
+			var index = this.ws.push(ws) - 1;
+			ws.on('close', () => {
+				console.log(`client ${index} disconnected`)
+				this.ws.splice(index, 1)
+			})
 		})
 		
 	}
@@ -71,10 +77,10 @@ class KafkaSocketServer{
 				//this.console_output("Taxi "+fields[0]+" is speeding");
 			break;
 			case 'TaxiTotal':
-				//this.updateCurrentNumTaxisDriving(fields[2]);
+				this.updateCurrentNumTaxisDriving(fields[2]);
 			break;
 			case 'DistanceTotal':
-				//this.updateOverallDistance(fields[2]);
+				this.updateOverallDistance(fields[2]);
 			break;
 			case 'LocationBolt':
 				this.updateTaxiLocation(fields[0], parseFloat(fields[2]), parseFloat(fields[3]));
@@ -98,12 +104,22 @@ class KafkaSocketServer{
 				longi: longi,
 				lati: lati
 			})
+			taxi = this.taxis.findOne({id:id});
 		}else{
 			taxi.longi = longi;
 			taxi.lati = lati;
 			this.taxis.update(taxi);
 		}
+		taxi.type = 'location';
 		this.broadcast(JSON.stringify(taxi));	
+	}
+
+	updateCurrentNumTaxisDriving(val){
+		this.broadcast(JSON.stringify({total: val, type: 'total'}));
+	}
+
+	updateOverallDistance(val){
+		this.broadcast(JSON.stringify({distance: val, type: 'distance'}));
 	}
 
 }
