@@ -90,7 +90,8 @@ function initWebsocketClient(){
 
             switch(type){
                 case 'message':
-                    console_output(dataObj.msg);
+                    if(!ignore_taxi(entry))
+                    	console_output(dataObj.msg);
                     break;
                 case 'total':
                     updateCurrentNumTaxisDriving(dataObj.total);
@@ -168,6 +169,7 @@ function oob_add(id){
 		return;
 	oob.push(id);
 	console_output("Taxi "+id+" left area");
+	taxi_set_ignore(id, true);
 	marker_set_visible(id, false);
 }
 
@@ -216,6 +218,7 @@ function oob_remove(id){
 		return;
 	oob.splice(index, 1);
 	console_output("Taxi "+id+" entered area");
+	taxi_set_ignore(id, false);
 	marker_set_visible(id, true);
 }
   
