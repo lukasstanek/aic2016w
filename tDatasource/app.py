@@ -46,9 +46,9 @@ def cache_first_send_later(filehandle):
         print('emitting: ' + location.json())
         p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())
-        p.flush()
 
-        sleep(1*args.speed)
+        # p.flush()
+
 
 
 def send_data_continously(filehandle):
@@ -57,7 +57,7 @@ def send_data_continously(filehandle):
         print('emitting: ' + location.json())
         p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())
-        p.flush()
+        # p.flush()
 
         sleep(1*args.speed)
 
@@ -80,7 +80,7 @@ def send_data_realtime(filehandle):
         print('emitting: ' + location.json())
         p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())
-        p.flush()
+        # p.flush()
 
 def send_data():
     print('reading file: ' + args.filename)
