@@ -133,7 +133,8 @@ public class Main {
                 .shuffleGrouping(LOCATION_BOLT)
                 .shuffleGrouping(NOTIFY_SPEEDING_BOLT)
                 .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "TaxiTotal")
-                .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "DistanceTotal");
+                .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "DistanceTotal")
+                .shuffleGrouping(INFORMATION_PROPAGATOR_BOLT, "TaxiOverall");
 
 
 

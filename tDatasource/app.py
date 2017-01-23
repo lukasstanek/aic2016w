@@ -13,12 +13,12 @@ import argparse
 
 
 datapoints = []
-datapath = '../data/'
+datapath = 'data/'
 #filename = '220.txt'
 # filename = '06.sorted.txt'
 
 def writeListToFile(datapoints):
-    out = open(join('../data/' + args.importpath + '.sorted.txt'), 'w')
+    out = open(join('data/' + args.importpath + '.sorted.txt'), 'w')
 
     for item in datapoints:
         out.write("%s,%s,%s,%s\n" % (item.id,  item.timeAsDate, item.longitude,  item.latitude))
@@ -35,6 +35,21 @@ def unifyInputs():
     datapoints.sort(key=lambda x: x.timestamp, reverse=False)
 
     writeListToFile(datapoints)
+
+
+def cache_first_send_later(filehandle):
+    locationList = []
+    for line in filehandle:
+        locationList.append(TaxiLocation(line))
+
+    for location in locationList:
+        print('emitting: ' + location.json())
+        p = Producer({'bootstrap.servers': 'localhost'})
+        p.produce('taxilocs', location.json())
+        p.flush()
+
+        sleep(1*args.speed)
+
 
 def send_data_continously(filehandle):
     for line in filehandle:
@@ -74,6 +89,8 @@ def send_data():
             send_data_realtime(filehandle)
         elif args.mode == 'continuous':
             send_data_continously(filehandle)
+        elif args.mode == 'inmemory':
+            cache_first_send_later(filehandle)
 
 
 

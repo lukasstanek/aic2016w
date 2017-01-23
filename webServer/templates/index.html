@@ -31,7 +31,13 @@
 	<div style="width: 80%; margin: 0 auto;">
 		<div id="test" class="divBox">
 			<div style="padding: 10px;" >
-				Currently driving taxis
+				Taxis total
+				<br />
+				<br />
+				<span id="overallTaxis"></span>
+				<br />
+				<br />
+				Taxis currently in motion
 				<br />
 				<br />
 				<span id="currtentTaxisDriving"></span>
@@ -48,7 +54,7 @@
 				Area violations
 				<br />
 				<br />
-				<div id="areaViolations" style="background-color: #f2f2f2; height: 120px; width: 80%; overflow: auto;"></div>
+				<div id="areaViolations" style="background-color: #f2f2f2; height: 200px; width: 80%; overflow: auto;"></div>
 
 			</div>
 		</div>
@@ -57,7 +63,7 @@
 				Console
 				<br />
 				<br />
-				<div style="background-color: #f2f2f2; height: 120px; overflow: auto;">
+				<div style="background-color: #f2f2f2; height: 200px; overflow: auto;">
 					<ul id="console"></ul>
 				</div>
 			</div>
@@ -90,11 +96,13 @@ function initWebsocketClient(){
 
             switch(type){
                 case 'message':
-                    if(!ignore_taxi(entry))
-                    	console_output(dataObj.msg);
+                    console_output(dataObj.msg);
                     break;
                 case 'total':
                     updateCurrentNumTaxisDriving(dataObj.total);
+                    break;
+                case 'overall':
+                    updateOverallTaxis(dataObj.total);
                     break;
                 case 'distance':
                     updateOverallDistance(dataObj.distance);
@@ -141,6 +149,9 @@ function updateCurrentNumTaxisDriving(val){
 	document.getElementById("currtentTaxisDriving").innerHTML = val;
 }
 
+function updateOverallTaxis(val){
+    document.getElementById("overallTaxis").innerHTML = val;
+}
 function updateOverallDistance(val){
 	document.getElementById("overallDistance").innerHTML = val;
 }
@@ -169,7 +180,6 @@ function oob_add(id){
 		return;
 	oob.push(id);
 	console_output("Taxi "+id+" left area");
-	taxi_set_ignore(id, true);
 	marker_set_visible(id, false);
 }
 
@@ -218,7 +228,6 @@ function oob_remove(id){
 		return;
 	oob.splice(index, 1);
 	console_output("Taxi "+id+" entered area");
-	taxi_set_ignore(id, false);
 	marker_set_visible(id, true);
 }
   
