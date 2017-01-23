@@ -14,8 +14,7 @@ Then start the local Storm cluster:
 ```java -jar AIC_Storm/target/AIC_Storm-1.0-SNAPSHOT-jar-with-dependencies.jar```
 
 Afterwards the web ui can be started:  
-```node --use_strict webServer/index.js```
-
+```node webServer/index.js```
 
 
 
