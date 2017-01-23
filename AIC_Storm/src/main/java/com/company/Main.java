@@ -6,6 +6,7 @@ package com.company;
 import bolts.*;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
+import org.apache.storm.StormSubmitter;
 import org.apache.storm.generated.AlreadyAliveException;
 import org.apache.storm.generated.AuthorizationException;
 import org.apache.storm.generated.InvalidTopologyException;
@@ -55,7 +56,6 @@ public class Main {
             REDIS_PORT = Integer.parseInt(args[5]);
         }
 
-        LocalCluster localCluster = new LocalCluster();
 
 
         //config
@@ -137,10 +137,14 @@ public class Main {
 
 
 
-        StormTopology topology = builder.createTopology();
-        localCluster.submitTopology(TOPOLOGY,clusterConfig,topology);
-//        StormSubmitter.submitTopology(TOPOLOGY, clusterConfig, topology);
-        //localCluster.shutdown();
+        if (args != null && args.length > 0) {
+            StormSubmitter.submitTopologyWithProgressBar(TOPOLOGY, clusterConfig, builder.createTopology());
+        } else {
+            LocalCluster cluster = new LocalCluster();
+            StormTopology topology = builder.createTopology();
+            cluster.submitTopology(TOPOLOGY, clusterConfig, topology);
+        }
+
     }
 
     public static void testHaversine(String[] args){
