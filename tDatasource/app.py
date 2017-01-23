@@ -42,26 +42,27 @@ def cache_first_send_later(filehandle):
     for line in filehandle:
         locationList.append(TaxiLocation(line))
 
+    p = Producer({'bootstrap.servers': 'localhost'})
+    
     for location in locationList:
-        print('emitting: ' + location.json())
-        p = Producer({'bootstrap.servers': 'localhost'})
+        # print('emitting: ' + location.json())
         p.produce('taxilocs', location.json())
 
-        # p.flush()
-
-
+    p.flush()
 
 def send_data_continously(filehandle):
+    p = Producer({'bootstrap.servers': 'localhost'})
+
     for line in filehandle:
         location = TaxiLocation(line)
         print('emitting: ' + location.json())
-        p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())
-        # p.flush()
+        p.flush()
 
         sleep(1*args.speed)
 
 def send_data_realtime(filehandle):
+    p = Producer({'bootstrap.servers': 'localhost'})
     firstLine = True
     currentTime = ''
     while True:
@@ -78,9 +79,8 @@ def send_data_realtime(filehandle):
             print('current time: ' + str(currentTime))
 
         print('emitting: ' + location.json())
-        p = Producer({'bootstrap.servers': 'localhost'})
         p.produce('taxilocs', location.json())
-        # p.flush()
+        p.flush()
 
 def send_data():
     print('reading file: ' + args.filename)
